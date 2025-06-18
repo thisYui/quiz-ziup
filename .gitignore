@@ -1,0 +1,100 @@
+# General System Files
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.swo
+*.bak
+
+# IDE and Editor Files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Environment Files
+!/backend/.env.example
+!/backend/.env*.erb
+
+# Docker
+.docker-sync/
+docker-sync.yml
+/postgres-data/
+
+# Documentation
+guidelines.md
+
+# ----- Backend (Rails) -----
+# Dependencies
+/backend/.bundle/
+/backend/node_modules/
+/backend/vendor/bundle/
+
+# Logs and Temporary Files
+!/backend/log/.keep
+/backend/tmp/*
+!/backend/tmp/.keep
+/backend/tmp/pids/*
+!/backend/tmp/pids/
+!/backend/tmp/pids/.keep
+/backend/tmp/storage/*
+!/backend/tmp/storage/
+!/backend/tmp/storage/.keep
+/backend/.byebug_history
+/backend/log/
+/backend/test/
+/backend/tmp
+
+# Database
+/backend/db/*.sqlite3
+/backend/db/*.sqlite3-*
+*.dump
+*.sql
+
+# Credentials and Secrets
+/backend/config/master.key
+/backend/config/credentials/*.key
+/backend/config/credentials.yml.enc
+
+# Environment
+/backend/.env
+/backend/.env.*
+
+# Compiled Assets
+/backend/public/assets
+/backend/public/packs
+/backend/public/packs-test
+
+# Storage
+/backend/storage/*
+!/backend/storage/.keep
+
+# Testing and Coverage
+/backend/coverage/
+
+# Logs
+/backend/yarn-error.log
+
+# ----- Frontend (React) -----
+# Dependencies
+/frontend/node_modules/
+/frontend/.pnp
+/frontend/.pnp.js
+
+# Testing and Coverage
+/frontend/coverage/
+
+# Production Build
+/frontend/build/
+
+# Environment
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
+
+# Logs
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*

@@ -1,0 +1,46 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Ruby files
+*.rb text diff=ruby
+*.rake text diff=ruby
+Gemfile text diff=ruby
+Rakefile text diff=ruby
+
+# Rails specific
+*.erb text diff=html
+*.builder text diff=ruby
+*.jbuilder text diff=ruby
+
+# JavaScript files
+*.js text
+*.jsx text
+*.ts text
+*.tsx text
+*.json text
+*.css text
+*.scss text
+*.html text diff=html
+
+# Documentation
+*.md text diff=markdown
+*.txt text
+LICENSE text
+*.yml text
+*.yaml text
+
+# Graphics
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
+
+# Exclude files from exporting
+.gitattributes export-ignore
+.gitignore export-ignore
+
+# Docker files
+Dockerfile text
+docker-compose.yml text
