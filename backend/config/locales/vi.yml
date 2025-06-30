@@ -1,1 +1,23 @@
 vi:
+  auth:
+    login:
+      title: "Đăng nhập"
+      email: "Email"
+      password: "Mật khẩu"
+      remember_me: "Ghi nhớ đăng nhập"
+      submit: "Đăng nhập"
+      forgot_password: "Quên mật khẩu?"
+      no_account: "Chưa có tài khoản?"
+      register: "Đăng ký ngay"
+    register:
+      title: "Đăng ký"
+      name: "Tên"
+      confirm_password: "Xác nhận mật khẩu"
+      submit: "Đăng ký"
+    reset_password:
+      title: "Đặt lại mật khẩu"
+      email: "Email"
+      submit: "Gửi liên kết đặt lại"
+    errors:
+      invalid_credentials: "Email hoặc mật khẩu không hợp lệ."
+      user_not_found: "Không tìm thấy người dùng."
