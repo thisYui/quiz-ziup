@@ -114,6 +114,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
     t.integer "question_type", null: false
     t.integer "score", default: 1
     t.integer "level"
+    t.integer "time", default: 30
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["quiz_id"], name: "index_questions_on_quiz_id"
