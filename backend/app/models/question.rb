@@ -8,4 +8,9 @@ class Question < ApplicationRecord
     very_hard: 3,
     extreme: 4
   }
+  enum magic_points: {
+    none: 0,
+    double_score: 1,
+    auto_correct: 2
+  }
 end

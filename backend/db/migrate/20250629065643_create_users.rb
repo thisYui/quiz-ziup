@@ -3,6 +3,7 @@ class CreateUsers < ActiveRecord::Migration[7.1]
     create_table :users do |t|
       t.text :full_name
       t.text :email
+      t.text :avatar_url, default: "../assets/images/default_avatar.png"
       t.text :password
       t.date :birth_date
 

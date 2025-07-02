@@ -1,6 +1,6 @@
 class Quiz < ApplicationRecord
   belongs_to :owner_user, class_name: 'User', dependent: :destroy
-  enum status: { private: 0, public: 1 }
+  enum status: { key: 0, no_key: 1 }
   enum topic: {
     math: 0,
     physics: 1,

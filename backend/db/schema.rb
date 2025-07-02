@@ -114,10 +114,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
     t.integer "question_type", null: false
     t.integer "score", default: 1
     t.integer "level"
+    t.integer "position", null: false
     t.integer "time", default: 30
+    t.integer "magic_points", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["quiz_id"], name: "index_questions_on_quiz_id"
+    t.check_constraint "\"position\" > 0", name: "index_greater_than_zero"
   end
 
   create_table "quizzes", force: :cascade do |t|
@@ -139,6 +142,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
   create_table "users", force: :cascade do |t|
     t.text "full_name", null: false
     t.text "email", null: false
+    t.text "avatar_url", default: "../assets/images/default_avatar.png"
     t.text "password", null: false
     t.date "birth_date", null: false
     t.datetime "created_at", null: false

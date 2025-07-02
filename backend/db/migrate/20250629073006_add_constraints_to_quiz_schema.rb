@@ -26,6 +26,8 @@ class AddConstraintsToQuizSchema < ActiveRecord::Migration[7.1]
     change_column_null :questions, :quiz_id, false
     change_column_null :questions, :content, false
     change_column_null :questions, :question_type, false
+    change_column_null :questions, :position, false
+    add_check_constraint :questions, "position > 0", name: "index_greater_than_zero"
 
     # Choice Options
     change_column_null :choice_options, :question_id, false
@@ -65,6 +67,5 @@ class AddConstraintsToQuizSchema < ActiveRecord::Migration[7.1]
     change_column_null :answers, :question_id, false
     change_column_null :answers, :answerable_id, true
     change_column_null :answers, :answerable_type, true
-
   end
 end
