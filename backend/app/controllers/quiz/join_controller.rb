@@ -22,12 +22,7 @@ class Quiz::JoinController < ApplicationController
       return
     end
 
-    if quiz.participants.exists?(user_id: current_user.id)
-      render json: { error: I18n.t('quiz.join.already_joined') }, status: :unprocessable_entity
-      return
-    end
-
-    quiz.participants.create(user_id: current_user.id)
+    # ---------
 
     render json: { message: I18n.t('quiz.join.success') }, status: :ok
   end

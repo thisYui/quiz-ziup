@@ -2,10 +2,29 @@ class Auth::AuthenticationController < ApplicationController
     def login
       user = User.find_by(email: params[:email])
 
-      if user && user.password == BCrypt::Password.new(params[:password])
+      if user&.authenticate(params[:password])
         # Tạo token hoặc session cho người dùng
-        token = JwtService.encode({ user_id: user.id })
-        render json: { message: I18n.t('auth.login.success'), token: token }, status: :ok
+        if params[:remember_me]
+          # Lấy ra phần dữ liệu của thiết bị
+          #   :device
+          #   :ip_address
+          #   :user_agent
+          jwt_token = params[:jwt_token]
+
+          # Tạo token
+          jti = JwtService.encode({ user_id: user.id })
+          exp = 1.hours.from_now.to_i
+
+          # Thêm token
+          jwt_token[:jti] = jti
+          jwt_token[:exp] = exp.to_i
+
+          JwtToken.create(jwt_token).save
+
+          render json: { message: I18n.t('auth.login.success'), token: jti }, status: :ok
+        else
+          render json: { message: I18n.t('auth.login.success') }, status: :ok
+        end
       else
         render json: { error: I18n.t('auth.login.failure') }, status: :unauthorized
       end
@@ -14,7 +33,7 @@ class Auth::AuthenticationController < ApplicationController
     def register
         user = User.new(
             email: params[:email],
-            password: BCrypt::Password.create(params[:password]),
+            password: params[:password],
             birth_date: params[:birth_date]
         )
 
@@ -28,7 +47,11 @@ class Auth::AuthenticationController < ApplicationController
 
     def send_otp
       # Gửi OTP đến email người dùng
-      OTP.send_otp(params[:email])
+      if OTPServices.send_otp(params[:email])
+        render json: { message: I18n.t('auth.otp.notice') }, status: :ok
+      else
+        render json: { error: I18n.t('auth.otp.failure') }, status: :unprocessable_entity
+      end
     end
 
     def confirm_otp
@@ -41,6 +64,13 @@ class Auth::AuthenticationController < ApplicationController
     end
 
     def logout
-      # Xóa session hoặc token
+      # Xóa session
+      # Tìm đúng dòng dữ liệu
+      jwt_token = JwtToken.where(jti: params[:jti],
+                                 device: params[:device],
+                                 ip_address: params[:ip_address],
+                                 user_agent: params[:user_agent])
+      # Xóa dòng
+      jwt_token.delete_all
     end
 end
