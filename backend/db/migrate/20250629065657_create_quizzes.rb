@@ -6,6 +6,7 @@ class CreateQuizzes < ActiveRecord::Migration[7.1]
       t.text :title
       t.text :description
       t.integer :status
+      t.integer :count_registered, default: 0
       t.integer :max_participants
       t.boolean :can_register
       t.text :key, default: nil  # Key for private quizzes

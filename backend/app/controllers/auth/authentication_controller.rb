@@ -5,9 +5,9 @@ class Auth::AuthenticationController < ApplicationController
       if user && user.password == BCrypt::Password.new(params[:password])
         # Tạo token hoặc session cho người dùng
         token = JwtService.encode({ user_id: user.id })
-        render json: { message: "Đăng nhập thành công", token: token }, status: :ok
+        render json: { message: I18n.t('auth.login.success'), token: token }, status: :ok
       else
-        render json: { error: "Email hoặc mật khẩu không đúng" }, status: :unauthorized
+        render json: { error: I18n.t('auth.login.failure') }, status: :unauthorized
       end
     end
 
@@ -19,22 +19,25 @@ class Auth::AuthenticationController < ApplicationController
         )
 
         if user.save
-          render json: { message: "Đăng ký thành công" }, status: :created
+          render json: { message: I18n.t('auth.register.success') }, status: :created
         else
-          render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: I18n.t('auth.register.failure') }, status: :unprocessable_entity
         end
     end
 
 
     def send_otp
-      # Tạo OTP 6 chữ số
-      otp = "%06d" % rand(0..999999)
-
-      puts "OTP được gửi: #{otp}" # In ra OTP để kiểm tra (thực tế sẽ gửi qua email hoặc SMS)
+      # Gửi OTP đến email người dùng
+      OTP.send_otp(params[:email])
     end
 
     def confirm_otp
       # xác nhận OTP
+      if OTPServices.confirm_otp(params[:email], params[:otp])
+        render json: { message: I18n.t('auth.otp.success') }, status: :ok
+      else
+        render json: { error: I18n.t('auth.otp.failure') }, status: :unprocessable_entity
+      end
     end
 
     def logout

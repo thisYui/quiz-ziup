@@ -21,6 +21,7 @@ class AddConstraintsToQuizSchema < ActiveRecord::Migration[7.1]
     change_column_null :quizzes, :can_register, false
     change_column_null :quizzes, :topic, false
     add_index :quizzes, :code, unique: true, name: "code_unique_index", if_not_exists: true
+    add_index :quizzes, "count_registered >= 0", name: "index_quizzes_on_count_registered"
 
     # Questions
     change_column_null :questions, :quiz_id, false
