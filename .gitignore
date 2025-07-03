@@ -98,3 +98,7 @@ guidelines.md
 /frontend/npm-debug.log*
 /frontend/yarn-debug.log*
 /frontend/yarn-error.log*
+
+# Server
+/server/node_modules
+/server/package-lock.json

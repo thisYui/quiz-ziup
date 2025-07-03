@@ -1,23 +1,48 @@
 vi:
   auth:
     login:
-      title: "Đăng nhập"
-      email: "Email"
-      password: "Mật khẩu"
-      remember_me: "Ghi nhớ đăng nhập"
-      submit: "Đăng nhập"
-      forgot_password: "Quên mật khẩu?"
-      no_account: "Chưa có tài khoản?"
-      register: "Đăng ký ngay"
+      success: "Đăng nhập thành công"
+      failure: "Sai mật khẩu"
     register:
-      title: "Đăng ký"
-      name: "Tên"
-      confirm_password: "Xác nhận mật khẩu"
-      submit: "Đăng ký"
-    reset_password:
-      title: "Đặt lại mật khẩu"
-      email: "Email"
-      submit: "Gửi liên kết đặt lại"
-    errors:
-      invalid_credentials: "Email hoặc mật khẩu không hợp lệ."
-      user_not_found: "Không tìm thấy người dùng."
+      success: "Đăng ký tài khoản thành công"
+      failure: "Đăng kí thát bại"
+    otp:
+      notice: "Vui lòng nhập mã OTP đã được gửi đến email của bạn"
+      success: "Xác thực OTP thành công"
+      failure: "Sai mã xác thực OTP"
+  quiz:
+    join:
+      success: "Tham gia quiz thành công"
+      failure: "Tham gia quiz thất bại"
+      not_found: "Quiz không tồn tại"
+      full: "Quiz đã đủ người tham gia"
+      not_started: "Quiz chưa bắt đầu"
+    start:
+      success: "Bắt đầu quiz thành công"
+      failure: "Bắt đầu quiz thất bại"
+      not_found: "Quiz không tồn tại"
+    update:
+      success: "Cập nhật quiz thành công"
+      failure: "Cập nhật quiz thất bại"
+      not_found: "Quiz không tồn tại"
+      blank: "Thông tin quiz không được để trống"
+      already_exists: "Dữ liệu đã tồn tại"
+    end:
+      success: "Kết thúc quiz thành công"
+      failure: "Kết thúc quiz thất bại"
+      not_found: "Quiz không tồn tại"
+  account:
+    get:
+      success: "Lấy thông tin tài khoản thành công"
+      failure: "Lấy thông tin tài khoản thất bại"
+      not_found: "Tài khoản không tồn tại"
+    update:
+      success: "Cập nhật tài khoản thành công"
+      failure: "Cập nhật tài khoản thất bại"
+      not_found: "Tài khoản không tồn tại"
+      blank: "Thông tin tài khoản không được để trống"
+      already_exists: "Dữ liệu đã tồn tại"
+    delete:
+      success: "Xóa tài khoản thành công"
+      failure: "Xóa tài khoản thất bại"
+      not_found: "Tài khoản không tồn tại"
