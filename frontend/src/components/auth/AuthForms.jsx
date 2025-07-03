@@ -5,6 +5,7 @@ import { Eye, EyeOff, ArrowLeft, Mail, Lock, User, Phone } from "lucide-react"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
+import { authApi } from "../../services/apiService"
 
 // Removed TypeScript type definition for compatibility with plain JavaScript
 
@@ -25,25 +26,67 @@ export default function AuthForms() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSendOTP = () => {
-    // Simulate OTP sending
-    setCurrentStep("otp")
+  const handleSendOTP = async () => {
+    try {
+      const response = await authApi.sendOtp(formData.email);
+      if (response.message) {
+        setCurrentStep("otp");
+      } else {
+        alert("Failed to send OTP: " + response.error);
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      alert("An error occurred while sending OTP.");
+    }
   }
 
-  const handleVerifyOTP = () => {
-    // Simulate OTP verification
-    setCurrentStep("password")
+  const handleVerifyOTP = async () => {
+    try {
+      const response = await authApi.confirmOtp(formData.email, formData.otp);
+      if (response.message) {
+        setCurrentStep("password");
+      } else {
+        alert("OTP verification failed: " + response.error);
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      alert("An error occurred while verifying OTP.");
+    }
   }
 
-  const handleRegister = () => {
-    // Simulate registration completion
-    alert("Registration completed successfully!")
-    setCurrentStep("login")
+  const handleRegister = async () => {
+    try {
+      const response = await authApi.register(formData.email, formData.password, formData.birthDate || "");
+      if (response.message) {
+        alert("Registration completed successfully!");
+        setCurrentStep("login");
+      } else {
+        alert("Registration failed: " + response.errors);
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      alert("An error occurred during registration.");
+    }
   }
 
-  const handleLogin = () => {
-    // Simulate login
-    alert("Login successful!")
+  const handleLogin = async () => {
+    try {
+      const deviceInfo = {
+        device: navigator.platform,
+        ip_address: "", // This would typically be fetched from an API or server-side
+        user_agent: navigator.userAgent,
+      };
+      const response = await authApi.login(formData.email, formData.password, true, deviceInfo);
+      if (response.message) {
+        alert("Login successful!");
+        // Optionally redirect or update app state here
+      } else {
+        alert("Login failed: " + response.error);
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      alert("An error occurred during login.");
+    }
   }
 
   return (
