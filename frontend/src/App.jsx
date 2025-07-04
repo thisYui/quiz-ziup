@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { CodeInputPage } from './pages/quiz/CodeInputPage';
+import LobbyPage from './pages/quiz/Lobby';
 import AuthForms from './components/auth/AuthForms';
 
 export function App() {
@@ -19,6 +20,12 @@ export function App() {
         <Route 
           path="/" 
           element={<CodeInputPage onStartQuiz={handleStartQuiz} />} 
+        />
+        
+        {/* Route for the lobby page URI ("/lobby") */}
+        <Route 
+          path="/lobby" 
+          element={<LobbyPage />} 
         />
         
         {/* Route for the authentication page URI ("/auth") with nested routes */}
