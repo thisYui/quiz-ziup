@@ -1,37 +1,57 @@
 class Quiz::JoinController < ApplicationController
   def join
-    quiz = Quiz.find_by(code: params[:code])
+    quiz = find_quiz(params[:code], params[:key])
+    return unless quiz
 
-    if quiz.nil?
-      render json: { error: I18n.t('quiz.join.not_found') }, status: :not_found
-      return
-    end
+    quiz_session = get_instance_session(quiz.id)
+    return unless quiz_session
 
-    if quiz.key
-      render json: { key: true }, status: :ok
-      return
-    end
+    quiz_session.join(params[:participator_id], params[:participator_type])  # Join và ghi nhận tham gia
+    participants = quiz_session.get_list_participants
 
-    unless quiz.can_register
-      render json: { error: I18n.t('quiz.join.not_started') }, status: :forbidden
-      return
-    end
-
-    if quiz.count_register >= quiz.max_participants
-      render json: { error: I18n.t('quiz.join.full') }, status: :forbidden
-      return
-    end
-
-    # ---------
-
-    render json: { message: I18n.t('quiz.join.success') }, status: :ok
-  end
-
-  def join_with_key
-
+    render json: {
+      quiz_session: quiz_session,
+      participants: participants
+    }, status: :ok
   end
 
   def submit
+    # chưa viết
+  end
 
+  private
+
+  def find_quiz(code, key = nil)
+    quiz = Quiz.find_by(code: code)
+
+    unless quiz
+      render json: { error: I18n.t('quiz.join.not_found') }, status: :not_found
+      return nil
+    end
+
+    if quiz.status == "key"
+      if key.nil?
+        render json: { key: true }, status: :ok
+        return nil
+      end
+
+      if quiz.key != key
+        render json: { error: I18n.t('quiz.join.invalid_key') }, status: :unprocessable_entity
+        return nil
+      end
+    end
+
+    quiz
+  end
+
+  def get_instance_session(quiz_id)
+    quiz_session = QuizSession.where(quiz_id: quiz_id).order(updated_at: :desc).first
+
+    if quiz_session.nil? || quiz_session.is_ended
+      render json: { error: I18n.t('quiz.join.not_started') }, status: :not_found
+      return nil
+    end
+
+    quiz_session
   end
 end

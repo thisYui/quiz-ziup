@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, ArrowLeft, Mail, Lock, User, Phone } from "lucide-react"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
@@ -9,8 +10,9 @@ import { authApi } from "../../services/apiService"
 
 // Removed TypeScript type definition for compatibility with plain JavaScript
 
-export default function AuthForms() {
-  const [currentStep, setCurrentStep] = useState("login")
+export default function AuthForms({ formType = "login" }) {
+  const [currentStep, setCurrentStep] = useState(formType)
+  const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -278,7 +280,10 @@ export default function AuthForms() {
               <div className="text-center">
                 <span style={{ color: "#888888" }}>{"Don't have an account? "}</span>
                 <button
-                  onClick={() => setCurrentStep("register")}
+                  onClick={() => {
+                    setCurrentStep("register");
+                    navigate("/auth/register");
+                  }}
                   className="font-semibold transition-colors"
                   style={{ color: "#2563EB" }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#14B8A6")}
@@ -416,7 +421,10 @@ export default function AuthForms() {
               <div className="text-center">
                 <span style={{ color: "#888888" }}>Already have an account? </span>
                 <button
-                  onClick={() => setCurrentStep("login")}
+                  onClick={() => {
+                    setCurrentStep("login");
+                    navigate("/auth/login");
+                  }}
                   className="font-semibold transition-colors"
                   style={{ color: "#2563EB" }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "#14B8A6")}

@@ -21,9 +21,9 @@ class Auth::AuthenticationController < ApplicationController
 
           JwtToken.create(jwt_token).save
 
-          render json: { message: I18n.t('auth.login.success'), token: jti }, status: :ok
+          render json: { user: user, token: jti }, status: :ok
         else
-          render json: { message: I18n.t('auth.login.success') }, status: :ok
+          render json: { user: user, token: nil }, status: :ok
         end
       else
         render json: { error: I18n.t('auth.login.failure') }, status: :unauthorized
@@ -34,7 +34,6 @@ class Auth::AuthenticationController < ApplicationController
         user = User.new(
             email: params[:email],
             password: params[:password],
-            birth_date: params[:birth_date]
         )
 
         if user.save

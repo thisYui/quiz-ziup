@@ -18,8 +18,4 @@ class Quiz::UpdateController < ApplicationController
   def update_topic
 
   end
-
-  def update_question
-
-  end
 end

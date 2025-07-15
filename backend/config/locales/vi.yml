@@ -17,6 +17,8 @@ vi:
       not_found: "Quiz không tồn tại"
       full: "Quiz đã đủ người tham gia"
       not_started: "Quiz chưa bắt đầu"
+      invalid: "Không hợp lệ"
+      invalid_key: "Khóa tham gia không hợp lệ"
     start:
       success: "Bắt đầu quiz thành công"
       failure: "Bắt đầu quiz thất bại"
