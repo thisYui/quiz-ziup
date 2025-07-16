@@ -3,6 +3,9 @@ vi:
     login:
       success: "Đăng nhập thành công"
       failure: "Sai mật khẩu"
+      invalid_params: "Thông tin đăng nhập không hợp lệ"
+      not_found: "Tài khoản không tồn tại"
+      error_token: "Lỗi token, vui lòng đăng nhập lại"
     register:
       success: "Đăng ký tài khoản thành công"
       failure: "Đăng kí thát bại"
@@ -10,6 +13,9 @@ vi:
       notice: "Vui lòng nhập mã OTP đã được gửi đến email của bạn"
       success: "Xác thực OTP thành công"
       failure: "Sai mã xác thực OTP"
+    logout:
+      success: "Đăng xuất thành công"
+      failure: "Đăng xuất thất bại"
   quiz:
     join:
       success: "Tham gia quiz thành công"

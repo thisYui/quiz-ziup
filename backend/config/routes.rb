@@ -1,9 +1,13 @@
 Rails.application.routes.draw do
+  # Image upload route
+  get '/storage/:id/:filename(.:format)',     to: 'files#show'
+
   namespace :auth do
     post "login",                     to: "authentication#login"
     post "register",                  to: "authentication#register"
     post "send_otp",                  to: "authentication#send_otp"
     post "confirm_otp",               to: "authentication#confirm_otp"
+    post "renew_token",               to: "authentication#renew_token"
     delete "logout",                  to: "authentication#logout"
   end
 
@@ -58,7 +62,7 @@ Rails.application.routes.draw do
 
     # Create actions
     post "create",                    to: "create#create"
-    post "delete",                    to: "create#delete"
+    delete "delete",                  to: "create#delete"
     post "add_question",              to: "create#add_question"
     post "remove_question",           to: "create#remove_question"
 
@@ -80,14 +84,14 @@ Rails.application.routes.draw do
 
   namespace :account do
     post "information",               to: "getting#get_information"
-    post "all_quiz",                  to: "getting#all_quiz"
-    post "quiz_outstanding",          to: "getting#quiz_outstanding"
+    post "owner_quiz",                to: "getting#owner_quiz"
+    get "quiz_outstanding",           to: "getting#quiz_outstanding"
     
     # Settings actions
     post "update_avatar",             to: "setting#update_avatar"
     post "update_name",               to: "setting#update_name"
     post "update_email",              to: "setting#update_email"
     post "update_password",           to: "setting#update_password"
-    post "delete_account",            to: "setting#delete_account"
+    delete "delete_account",          to: "setting#delete_account"
   end
 end

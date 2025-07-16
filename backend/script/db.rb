@@ -1,4 +1,6 @@
 # Load môi trường Rails
 require_relative '../config/environment'
 
-puts QuizSession.column_names
+user = User.find_by(id: 3)
+user.avatar_url = "3/avatar.png"
+user.save

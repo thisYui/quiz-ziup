@@ -1,75 +1,88 @@
 class Auth::AuthenticationController < ApplicationController
-    def login
-      user = User.find_by(email: params[:email])
+  def login
+    if params[:email].present? && params[:password].present?
+      login_with_password(params)
+    elsif params[:jti].present?
+      login_with_jwt(params)
+    else
+      render json: { error: I18n.t('auth.login.invalid_params') }, status: :bad_request
+    end
+  end
 
-      if user&.authenticate(params[:password])
-        # Tạo token hoặc session cho người dùng
-        if params[:remember_me]
-          # Lấy ra phần dữ liệu của thiết bị
-          #   :device
-          #   :ip_address
-          #   :user_agent
-          jwt_token = params[:jwt_token]
+  def register
+      user = User.new(
+          email: params[:email],
+          password: params[:password],
+      )
 
-          # Tạo token
-          jti = JwtService.encode({ user_id: user.id })
-          exp = 1.hours.from_now.to_i
+      save_user(user)
+  end
 
-          # Thêm token
-          jwt_token[:jti] = jti
-          jwt_token[:exp] = exp.to_i
 
-          JwtToken.create(jwt_token).save
+  def send_otp
+    # Gửi OTP đến email người dùng
+    if OtpService.send_otp(params[:email])
+      render json: { message: I18n.t('auth.otp.notice') }, status: :ok
+    else
+      render json: { error: I18n.t('auth.otp.failure') }, status: :unprocessable_entity
+    end
+  end
 
-          render json: { user: user, token: jti }, status: :ok
-        else
-          render json: { user: user, token: nil }, status: :ok
-        end
+  def confirm_otp
+    # xác nhận OTP
+    if OtpService.confirm_otp(params[:email], params[:otp])
+      render json: { message: I18n.t('auth.otp.success') }, status: :ok
+    else
+      render json: { error: I18n.t('auth.otp.failure') }, status: :unprocessable_entity
+    end
+  end
+
+  def renew_token
+    new_jti = JwtToken.renew_token(params)
+    if new_jti
+      render json: { token: new_jti }, status: :ok
+    else
+      render json: { error: I18n.t('auth.login.error_token') }, status: :unauthorized
+    end
+  end
+
+  def logout
+    # Xóa session
+    if JwtToken.delete_token(params)
+      render json: { message: I18n.t('auth.logout.success') }, status: :ok
+    else
+      render json: { error: I18n.t('auth.logout.failure') }, status: :unprocessable_entity
+    end
+  end
+
+  private
+
+  def login_with_password(params)
+    user = find_user_by_email(params[:email])
+    return unless user
+
+    if user.authenticate(params[:password])
+      # Tạo token hoặc session cho người dùng
+      if params[:remember_me]
+        jti = JwtToken.add_token(user.id, params[:jwt_token])
+        render json: { user_id: user_id, token: jti }, status: :ok
       else
-        render json: { error: I18n.t('auth.login.failure') }, status: :unauthorized
+        render json: { user_id: user_id, token: nil }, status: :ok
       end
+    else
+      render json: { error: I18n.t('auth.login.failure') }, status: :unauthorized
+      nil
+    end
+  end
+
+  def login_with_jwt(params)
+    # Giải mã JWT token và lấy id
+    user_id = JwtToken.find_by_jti(params)
+    unless user_id
+      render json: { error: I18n.t('auth.login.error_token') }, status: :unauthorized
+      return
     end
 
-    def register
-        user = User.new(
-            email: params[:email],
-            password: params[:password],
-        )
-
-        if user.save
-          render json: { message: I18n.t('auth.register.success') }, status: :created
-        else
-          render json: { errors: I18n.t('auth.register.failure') }, status: :unprocessable_entity
-        end
-    end
-
-
-    def send_otp
-      # Gửi OTP đến email người dùng
-      if OTPServices.send_otp(params[:email])
-        render json: { message: I18n.t('auth.otp.notice') }, status: :ok
-      else
-        render json: { error: I18n.t('auth.otp.failure') }, status: :unprocessable_entity
-      end
-    end
-
-    def confirm_otp
-      # xác nhận OTP
-      if OTPServices.confirm_otp(params[:email], params[:otp])
-        render json: { message: I18n.t('auth.otp.success') }, status: :ok
-      else
-        render json: { error: I18n.t('auth.otp.failure') }, status: :unprocessable_entity
-      end
-    end
-
-    def logout
-      # Xóa session
-      # Tìm đúng dòng dữ liệu
-      jwt_token = JwtToken.where(jti: params[:jti],
-                                 device: params[:device],
-                                 ip_address: params[:ip_address],
-                                 user_agent: params[:user_agent])
-      # Xóa dòng
-      jwt_token.delete_all
-    end
+    render json: { user_id: user_id, token: params[:jti] }, status: :ok
+  end
 end

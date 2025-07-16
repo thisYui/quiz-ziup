@@ -1,4 +1,4 @@
-class OTPServices
+class OtpService
   OTP_EXPIRE_TIME = 1.minutes
 
   def self.generate_otp
