@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "backend:cache:on": "cd backend && rails dev:cache",
+    "backend:db:delete": "cd backend && rails db:drop",
+    "backend:db:fdelete": "cd backend && dropdb -U postgres --force quiz_backend_development && dropdb -U postgres --force quiz_backend_test",
+    "backend:db:migrate": "cd backend && rails db:create && rails db:migrate",
+    "backend:db:reset": "cd backend && rails db:drop db:create db:migrate",
+    "backend:init": "cd backend && bundle install && rails db:create && rails db:migrate && rails dev:cache",
+    "frontend:init": "npm install",
+    "init": "npm run backend:init && npm run frontend:init",
+    "backend:start": "cd backend && rails server",
+    "frontend:start": "cd frontend && npm run dev",
+    "start": "concurrently \"npm run backend:start\" \"npm run frontend:start\""
+  }
+}

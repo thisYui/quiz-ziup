@@ -69,3 +69,21 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
 end
+
+
+require 'socket'
+def self.local_lan_ip
+  udp_socket = UDPSocket.new
+  udp_socket.connect('8.8.8.8', 1)
+  ip = udp_socket.addr.last
+  udp_socket.close
+  ip
+rescue
+  '127.0.0.1'
+end
+
+Rails.application.routes.default_url_options = {
+  host: local_lan_ip,
+  port: 3000,
+  protocol: 'http'
+}

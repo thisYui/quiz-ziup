@@ -8,7 +8,6 @@ class CreateQuestions < ActiveRecord::Migration[7.1]
       t.integer :level
       t.integer :position
       t.integer :time, default: 30 # Default time in seconds
-      t.integer :magic_points, default: 0
 
       t.timestamps
     end
