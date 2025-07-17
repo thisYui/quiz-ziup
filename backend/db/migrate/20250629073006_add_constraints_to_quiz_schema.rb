@@ -53,7 +53,6 @@ class AddConstraintsToQuizSchema < ActiveRecord::Migration[7.1]
     # Answer (polymorphic: answerable)
     change_column_null :answers, :participations_id, false
     change_column_null :answers, :question_id, false
-    change_column_null :answers, :answerable_id, true
-    change_column_null :answers, :answerable_type, true
+
   end
 end

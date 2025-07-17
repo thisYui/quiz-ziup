@@ -79,4 +79,77 @@ class QuestionUtils
 
     true
   end
+
+  def self.get_content__answer__result(answers)
+    question = Question.find_by(id: answers.question_id)
+    return nil unless question
+
+    _question = {
+      content: question.content,
+      type: question.question_type,
+      level: question.level,
+      score: question.score
+    }
+
+    case answers.answerable_type
+    when 0, 1 # Single / Multiple Choice
+      choice_option = ChoiceOption.where(question_id: question.id)
+      choice_answer = ChoiceAnswer.where(answer_id: answers.id)
+
+      return {
+        question: _question,
+        options: choice_option.map do |option|
+          {
+            id: option.id,
+            content: option.content,
+            is_correct: option.is_correct,
+            position: option.position
+          }
+        end,
+        answers: choice_answer.map do |answer| { option_id: answer.choice_option_id } end
+      }
+
+    when 2 # Matching
+      matching_option = MatchingOption.where(question_id: question.id)
+      matching_result = MatchingResult.where(question_id: question.id)
+      matching_answer = MatchingAnswer.where(answer_id: answers.id)
+
+      return {
+        question: _question,
+        options: matching_option.map do |option|
+          {
+            id: option.id,
+            content: option.content,
+            side: option.side,
+            position: option.position
+          }
+        end,
+        results: matching_result.map do |result|
+          {
+            option_left_id: result.option_left_id,
+            option_right_id: result.option_right_id
+          }
+        end,
+        answers: matching_answer.map do |answer|
+          {
+            option_left_id: answer.option_left_id,
+            option_right_id: answer.option_right_id
+          }
+        end
+      }
+
+    when 3 # Fill in the blank
+      fill_result = FillResult.where(question_id: question.id)
+      fill_answer = FillAnswer.find_by(answer_id: answers.id)
+
+      return {
+        question: _question,
+        results: fill_result.map do |result| { content: result.content } end,
+        answers: fill_answer
+      }
+
+    else
+      return nil
+    end
+  end
 end

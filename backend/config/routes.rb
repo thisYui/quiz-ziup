@@ -87,6 +87,7 @@ Rails.application.routes.draw do
     post "owner_quiz",                to: "getting#owner_quiz"
     get "quiz_outstanding",           to: "getting#quiz_outstanding"
     post "history",                   to: "getting#history"
+    post "show_quiz",                 to: "getting#show_quiz"
     
     # Settings actions
     post "update_avatar",             to: "setting#update_avatar"

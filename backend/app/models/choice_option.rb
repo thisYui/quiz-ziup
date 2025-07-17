@@ -1,6 +1,5 @@
 class ChoiceOption < ApplicationRecord
   belongs_to :question
-  has_many :answer, as: :answerable
   
   def self.update_option_and_result_from_question_father(new_data, question_id)
     new_data.each do |option_data|

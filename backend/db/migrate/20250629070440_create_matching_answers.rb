@@ -4,7 +4,7 @@ class CreateMatchingAnswers < ActiveRecord::Migration[7.1]
       t.references :question, null: false, foreign_key: { to_table: :questions, on_delete: :cascade }
       t.references :option_left, null: false, foreign_key: { to_table: :matching_options, on_delete: :cascade }
       t.references :option_right, null: false, foreign_key: { to_table: :matching_options, on_delete: :cascade }
-      t.references :answerable, polymorphic: true, null: false
+      t.references :answer, null: false, foreign_key: { to_table: :answers, on_delete: :cascade }
 
       t.timestamps
     end

@@ -38,6 +38,19 @@ class Account::GettingController < ApplicationController
   end
 
   def history
+    # Tìm tất cả quiz đã tham gia của người dùng
+    # Có điểm và các câu đúng sai, đáp án và câu trả lời
+    # api này chỉ show các quiz đã tham gia, chi tiết ấn vào quiz sẽ có api khác
+    user_id = params[:user_id]
+    quiz_info = User.get_quiz_information(user_id)
+    render json: quiz_info, status: :ok
+  end
 
+  def show_quiz
+    # Có điểm và các câu đúng sai, đáp án và câu trả lời
+    quiz_session_id = params[:quiz_session_id]
+    participator_id = params[:participator_id]
+    info = QuizUtils.get_quiz_info(quiz_session_id, participator_id)
+    render json: info, status: :ok
   end
 end

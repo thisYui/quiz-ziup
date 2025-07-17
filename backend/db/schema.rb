@@ -17,14 +17,23 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
   create_table "answers", force: :cascade do |t|
     t.bigint "participations_id", null: false
     t.bigint "question_id", null: false
-    t.string "answerable_type"
-    t.bigint "answerable_id"
     t.integer "magic_points", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["answerable_type", "answerable_id"], name: "index_answers_on_answerable"
+    t.integer "answerable_type", null: false
     t.index ["participations_id"], name: "index_answers_on_participations_id"
     t.index ["question_id"], name: "index_answers_on_question_id"
+  end
+
+  create_table "choice_answers", force: :cascade do |t|
+    t.bigint "question_id", null: false
+    t.bigint "choice_option_id", null: false
+    t.bigint "answer_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["answer_id"], name: "index_choice_answers_on_answer_id"
+    t.index ["choice_option_id"], name: "index_choice_answers_on_choice_option_id"
+    t.index ["question_id"], name: "index_choice_answers_on_question_id"
   end
 
   create_table "choice_options", force: :cascade do |t|
@@ -47,23 +56,19 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
 
   create_table "fill_answers", force: :cascade do |t|
     t.bigint "question_id", null: false
-    t.string "answerable_type", null: false
-    t.bigint "answerable_id", null: false
+    t.bigint "answer_id", null: false
     t.text "content"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["answerable_type", "answerable_id"], name: "index_fill_answers_on_answerable"
+    t.index ["answer_id"], name: "index_fill_answers_on_answer_id"
     t.index ["question_id"], name: "index_fill_answers_on_question_id"
   end
 
   create_table "fill_results", force: :cascade do |t|
     t.bigint "question_id", null: false
-    t.string "answerable_type", null: false
-    t.bigint "answerable_id", null: false
     t.text "content", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["answerable_type", "answerable_id"], name: "index_fill_results_on_answerable"
     t.index ["question_id"], name: "index_fill_results_on_question_id"
   end
 
@@ -84,11 +89,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
     t.bigint "question_id", null: false
     t.bigint "option_left_id", null: false
     t.bigint "option_right_id", null: false
-    t.string "answerable_type", null: false
-    t.bigint "answerable_id", null: false
+    t.bigint "answer_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["answerable_type", "answerable_id"], name: "index_matching_answers_on_answerable"
+    t.index ["answer_id"], name: "index_matching_answers_on_answer_id"
     t.index ["option_left_id"], name: "index_matching_answers_on_option_left_id"
     t.index ["option_right_id"], name: "index_matching_answers_on_option_right_id"
     t.index ["question_id"], name: "index_matching_answers_on_question_id"
@@ -110,8 +114,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
     t.bigint "option_right_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "question_id", null: false
     t.index ["option_left_id"], name: "index_matching_results_on_option_left_id"
     t.index ["option_right_id"], name: "index_matching_results_on_option_right_id"
+    t.index ["question_id"], name: "index_matching_results_on_question_id"
   end
 
   create_table "participations", force: :cascade do |t|
@@ -157,6 +163,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
     t.integer "max_participants"
     t.string "key"
     t.integer "topic", null: false
+    t.boolean "hide", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["code"], name: "code_unique_index", unique: true
@@ -175,16 +182,22 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
 
   add_foreign_key "answers", "participations", column: "participations_id", on_delete: :cascade
   add_foreign_key "answers", "questions", on_delete: :cascade
+  add_foreign_key "choice_answers", "answers", on_delete: :cascade
+  add_foreign_key "choice_answers", "choice_options", on_delete: :cascade
+  add_foreign_key "choice_answers", "questions", on_delete: :cascade
   add_foreign_key "choice_options", "questions", on_delete: :cascade
+  add_foreign_key "fill_answers", "answers", on_delete: :cascade
   add_foreign_key "fill_answers", "questions", on_delete: :cascade
   add_foreign_key "fill_results", "questions", on_delete: :cascade
   add_foreign_key "jwt_tokens", "users", on_delete: :cascade
+  add_foreign_key "matching_answers", "answers", on_delete: :cascade
   add_foreign_key "matching_answers", "matching_options", column: "option_left_id", on_delete: :cascade
   add_foreign_key "matching_answers", "matching_options", column: "option_right_id", on_delete: :cascade
   add_foreign_key "matching_answers", "questions", on_delete: :cascade
   add_foreign_key "matching_options", "questions", on_delete: :cascade
   add_foreign_key "matching_results", "matching_options", column: "option_left_id", on_delete: :cascade
   add_foreign_key "matching_results", "matching_options", column: "option_right_id", on_delete: :cascade
+  add_foreign_key "matching_results", "questions"
   add_foreign_key "participations", "quiz_sessions", column: "quiz_sessions_id", on_delete: :cascade
   add_foreign_key "questions", "quizzes"
   add_foreign_key "quiz_sessions", "quizzes", on_delete: :cascade
