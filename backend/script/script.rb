@@ -11,7 +11,7 @@ user.save
 quiz = Quiz.new(
   description: 'description_1',
   code: 'code_1',
-  status: 1,
+  is_private: false,
   title: 'title_1',
   max_participants: 100,
   topic: 0,
@@ -29,7 +29,7 @@ user.save
 quiz = Quiz.new(
   description: 'description_2',
   code: 'code_2',
-  status: 0,
+  is_private: true,
   title: 'title_2',
   max_participants: 10,
   topic: 0,

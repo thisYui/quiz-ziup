@@ -153,7 +153,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
     t.text "code", null: false
     t.text "title", null: false
     t.text "description"
-    t.integer "status", null: false
+    t.boolean "is_private", default: false
     t.integer "max_participants"
     t.string "key"
     t.integer "topic", null: false
@@ -166,7 +166,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
   create_table "users", force: :cascade do |t|
     t.text "full_name", null: false
     t.text "email", null: false
-    t.text "avatar_url", default: "../assets/images/default_avatar.png"
+    t.text "avatar_url", default: "storage/default/__avatar.png"
     t.string "password_digest"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

@@ -1,10 +1,21 @@
 class Quiz::JoinController < ApplicationController
   def join
-    quiz = find_quiz(params[:code], params[:key])
-    return unless quiz
+    result = Quiz.find_quiz_by_code_and_key(params[:code], params[:key])
 
-    quiz_session = get_instance_session(quiz.id)
-    return unless quiz_session
+    if result.nil?
+      render json: { error: 'Quiz not found' }, status: :not_found
+      return
+    elsif result == "no-key"
+      render json: { error: 'Quiz is private, key is required' }, status: :forbidden
+      return
+    elsif result == "invalid-key"
+      render json: { error: 'Invalid key for the quiz' }, status: :forbidden
+      return
+    end
+
+    quiz = result
+    quiz_session = QuizSession.get_instance_session(quiz.id)
+    return unless is_true(quiz_session)
 
     quiz_session.join(params[:participator_id], params[:participator_type])  # Join và ghi nhận tham gia
     participants = quiz_session.get_list_participants
@@ -19,39 +30,18 @@ class Quiz::JoinController < ApplicationController
     # chưa viết
   end
 
-  private
-
-  def find_quiz(code, key = nil)
-    quiz = Quiz.find_by(code: code)
-
-    unless quiz
-      render json: { error: I18n.t('quiz.join.not_found') }, status: :not_found
-      return nil
-    end
-
-    if quiz.status == "key"
-      if key.nil?
-        render json: { key: true }, status: :ok
-        return nil
-      end
-
-      if quiz.key != key
-        render json: { error: I18n.t('quiz.join.invalid_key') }, status: :unprocessable_entity
-        return nil
-      end
-    end
-
-    quiz
+  def start
+    quiz_session = QuizSession.new(quiz_id: params[:quiz_id])
+    return unless is_true(quiz_session.save)
+    render json: { message: 'Quiz created successfully' }, status: :ok
   end
 
-  def get_instance_session(quiz_id)
-    quiz_session = QuizSession.where(quiz_id: quiz_id).order(updated_at: :desc).first
+  def end
+    quiz_session = QuizSession.get_instance_session(params[:quiz_id])
+    return unless is_true(quiz_session)
+    quiz_session.is_ended = true
 
-    if quiz_session.nil? || quiz_session.is_ended
-      render json: { error: I18n.t('quiz.join.not_started') }, status: :not_found
-      return nil
-    end
-
-    quiz_session
+    return unless is_true(quiz_session.save)
+    render json: { message: 'Quiz ended successfully' }, status: :ok
   end
 end

@@ -1,9 +1,38 @@
 class QuizSession < ApplicationRecord
-  belongs_to :quiz, dependent: :destroy
+  belongs_to :quiz
+  has_many :participations, dependent: :destroy
+  def get_information_quiz_session(quiz_session_id)
+    SqlQuery.get_information_quiz_session(quiz_session_id)
+  end
+
+  def self.get_instance_session(quiz_id)
+    QuizSession.where(quiz_id: quiz_id).order(updated_at: :desc).first
+  end
+
+  def self.get_all_quiz_sessions(quiz_id)
+    QuizSession.where(quiz_id: quiz_id).each do |session|
+      {
+        id: session.id,
+        created_at: session.created_at,
+      }
+    end
+  end
 
   def is_full(quiz_id)
     quiz = Quiz.find_by(id: quiz_id)
-    count_registered > quiz.max_participants
+
+    if quiz.nil?
+      return false
+    end
+
+    count_registered.to_i > quiz.max_participants.to_i
+  end
+
+  def check_close_register
+    if self.is_full(quiz_id)
+      self.is_ended = true
+      save
+    end
   end
 
   def join(id, type)
@@ -24,6 +53,7 @@ class QuizSession < ApplicationRecord
     )
 
     increment!(:count_registered)
+    check_close_register
   end
 
   def join_client(client_id)
@@ -34,6 +64,7 @@ class QuizSession < ApplicationRecord
     )
 
     increment!(:count_registered)
+    check_close_register
   end
 
   def get_list_participants

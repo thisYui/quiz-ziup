@@ -1,7 +1,7 @@
 class Account::SettingController < ApplicationController
   def update_avatar
-    user = find_user(params[:user_id])
-    return unless user
+    user = User.find_by(id: params[:user_id])
+    return unless is_true(user) and user
 
     # Mặc định url là (user.id).type
     name = "#{user.id}/avatar/#{params[:type]}"
@@ -11,22 +11,24 @@ class Account::SettingController < ApplicationController
     FileService.update_file(data, name, user.avatar_url)
     user.avatar_url = name  # Thay đổi path
 
-    save_user(user)
+    return unless is_true(user.save)
+    render json: { message: I18n.t('account.update.success') }, status: :ok
   end
 
   def update_name
-    user = find_user(params[:user_id])
-    return unless user
-
+    user = User.find_by(id: params[:user_id])
+    return unless is_true(user) and user
+    
     new_name = params[:new_name]
     user.full_name = new_name
-    
-    save_user(user)
+
+    return unless is_true(user.save)
+    render json: { message: I18n.t('account.update.success') }, status: :ok
   end
 
   def update_email
-    user = find_user(params[:user_id])
-    return unless user
+    user = User.find_by(id: params[:user_id])
+    return unless is_true(user) and user
 
     new_email = params[:email]
 
@@ -38,22 +40,24 @@ class Account::SettingController < ApplicationController
 
     user.email = new_email
 
-    save_user(user)
+    return unless is_true(user.save)
+    render json: { message: I18n.t('account.update.success') }, status: :ok
   end
 
   def update_password
-    user = find_user(params[:user_id])
-    return unless user
+    user = User.find_by(id: params[:user_id])
+    return unless is_true(user) and user
 
     new_password = params[:password]
     user.password = new_password
-    
-    save_user(user)
+
+    return unless is_true(user.save)
+    render json: { message: I18n.t('account.update.success') }, status: :ok
   end
 
-  def delete_account
-    user = find_user(params[:user_id])
-    return unless user
+  def delete
+    user = User.find_by(id: params[:user_id])
+    return unless is_true(user) and user
 
     # Xoá người dùng 
     if user.destroy

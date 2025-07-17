@@ -15,7 +15,8 @@ class Auth::AuthenticationController < ApplicationController
           password: params[:password],
       )
 
-      save_user(user)
+      return unless is_true(user.save)
+      render json: { message: I18n.t('account.update.success') }, status: :ok
   end
 
 
@@ -58,8 +59,8 @@ class Auth::AuthenticationController < ApplicationController
   private
 
   def login_with_password(params)
-    user = find_user_by_email(params[:email])
-    return unless user
+    user = User.find_by(email: params[:email])
+    return unless is_true(user) and user
 
     if user.authenticate(params[:password])
       # Tạo token hoặc session cho người dùng

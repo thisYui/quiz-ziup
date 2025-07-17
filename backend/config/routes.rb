@@ -59,39 +59,40 @@ Rails.application.routes.draw do
     # Join actions
     post "join",                      to: "join#join"
     post "submit",                    to: "join#submit"
+    post "start",                     to: "join#start"
+    post "end",                       to: "join#end"
 
     # Create actions
     post "create",                    to: "create#create"
     delete "delete",                  to: "create#delete"
     post "add_question",              to: "create#add_question"
-    post "remove_question",           to: "create#remove_question"
+    delete "remove_question",         to: "create#remove_question"
 
     # Update actions
     post "update_name",               to: "update#update_name"
     post "update_description",        to: "update#update_description"
     post "update_code",               to: "update#update_code"
-    post "update_status",             to: "update#update_status"
+    post "update_is_private",         to: "update#update_is_private"
     post "update_topic",              to: "update#update_topic"
-
-    # Start actions
-    post "start",                     to: "start#start"
-    post "end",                       to: "start#end"
 
     # View actions
     post "show",                      to: "view#show"
+    post "info_session",              to: "view#info_session"
     post "statistical",               to: "view#statistical"
   end
 
   namespace :account do
+    # Getting actions
     post "information",               to: "getting#get_information"
     post "owner_quiz",                to: "getting#owner_quiz"
     get "quiz_outstanding",           to: "getting#quiz_outstanding"
+    post "history",                   to: "getting#history"
     
     # Settings actions
     post "update_avatar",             to: "setting#update_avatar"
     post "update_name",               to: "setting#update_name"
     post "update_email",              to: "setting#update_email"
     post "update_password",           to: "setting#update_password"
-    delete "delete_account",          to: "setting#delete_account"
+    delete "delete",                  to: "setting#delete"
   end
 end

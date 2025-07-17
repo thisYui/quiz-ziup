@@ -1,5 +1,7 @@
 class Quiz < ApplicationRecord
   belongs_to :owner_user, class_name: 'User', dependent: :destroy
+  has_many :quiz_sessions, dependent: :destroy
+  has_many :questions, dependent: :destroy
   enum status: { key: 0, no_key: 1 }
   enum topic: {
     math: 0,
@@ -16,4 +18,21 @@ class Quiz < ApplicationRecord
     society: 10,
     other: 11
   }
+
+  def self.find_quiz_by_code_and_key(code, key = nil)
+    quiz = Quiz.find_by(code: code)
+    return nil unless quiz
+
+    if quiz.is_private
+      if key.nil?
+        return "no-key"
+      end
+
+      if quiz.key != key
+        return "invalid-key"
+      end
+    end
+
+    quiz
+  end
 end

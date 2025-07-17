@@ -1,7 +1,7 @@
 class Account::GettingController < ApplicationController
   def information
-    user = find_user(params[:user_id])
-    return unless user
+    user = User.find_by(id: params[:user_id])
+    return unless is_true(user) and user
 
     _user = {
       id: user.id,
@@ -33,7 +33,11 @@ class Account::GettingController < ApplicationController
     # Trong vòng 10s sau khi cache hết hạn, chỉ 1 request được phép truy vấn
     # Các request khác sẽ chờ hoặc dùng cache cũ tạm thời.
     Rails.cache.fetch('top_quiz_topic', expires_in: 12.hours, race_condition_ttl: 10.seconds) do
-      SqlHelper.get_top_quiz_topic
+      SqlQuery.get_top_quiz_topic
     end
+  end
+
+  def history
+
   end
 end
