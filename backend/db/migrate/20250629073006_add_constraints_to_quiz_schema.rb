@@ -46,7 +46,7 @@ class AddConstraintsToQuizSchema < ActiveRecord::Migration[7.1]
     change_column_null :fill_results, :content, false
 
     # Participation (polymorphic: participator)
-    change_column_null :participations, :quiz_sessions_id, false
+    change_column_null :participations, :quiz_session_id, false
     change_column_null :participations, :participator_id, true
     change_column_null :participations, :participator_type, true
 

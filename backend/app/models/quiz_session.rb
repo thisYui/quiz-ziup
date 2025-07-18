@@ -71,7 +71,7 @@ class QuizSession < ApplicationRecord
     participants = []
 
     # Tìm tất cả dòng tham gia quiz trong lần mở hiện tại
-    session_participants = Participation.where(quiz_sessions_id: id)  # ID của phiên quiz
+    session_participants = Participation.where(quiz_session_id: id)  # ID của phiên quiz
 
     session_participants.each do |p|
       # Kiểm tra type của participator

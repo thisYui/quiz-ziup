@@ -2,7 +2,6 @@ class Quiz < ApplicationRecord
   belongs_to :owner_user, class_name: 'User', dependent: :destroy
   has_many :quiz_sessions, dependent: :destroy
   has_many :questions, dependent: :destroy
-  enum status: { key: 0, no_key: 1 }
   enum topic: {
     math: 0,
     physics: 1,
@@ -34,5 +33,10 @@ class Quiz < ApplicationRecord
     end
 
     quiz
+  end
+
+  def self.quiz_open
+    quiz_ids = QuizSession.where(is_ended: false).pluck(:quiz_id)
+    Quiz.where(id: quiz_ids).pluck(:id)
   end
 end

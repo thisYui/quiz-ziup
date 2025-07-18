@@ -1,5 +1,5 @@
 class Quiz::Question::GeneralController < ApplicationController
-  def update_content
+  def update
     # Cập nhật nội dung câu hỏi
     # Bao gồm :
     #    Dữ liệu thuộc Question

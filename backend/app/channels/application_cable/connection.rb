@@ -1,26 +1,37 @@
 module ApplicationCable
   class Connection < ActionCable::Connection::Base
-    identified_by :current_user
+    identified_by :current_participant
 
     def connect
-      self.current_user = find_verified_user
+      self.current_participant = find_verified_user
+      Rails.logger.info "WebSocket connected: #{current_participant.id}"
+    end
+
+    def disconnect
+      # Xóa current_participant if needed
+      Rails.logger.info "WebSocket disconnected: #{current_participant.id}"
     end
 
     private
 
     def find_verified_user
-      token = request.params[:token]
+      participantion_id = params[:participantion_id]
+      quiz_id = params[:quiz_id]
 
-      if token.present?
-        # Verify JWT token
-        begin
-          decoded_token = JwtService.decode(token)
-          user_id = decoded_token['user_id']
-          User.find_by(id: user_id)
-        rescue => e
+      if participantion_id.present? && quiz_id.present?
+        participantion = Participation.find_by(id: participantion_id)
+        if participantion
+          Rails.logger.info "Verified participant: #{participantion.id}"
+          return {
+            id: participantion.id,
+            quiz_id: quiz_id,
+          }
+        else
+          Rails.logger.warn "Participant not found: #{participantion_id}"
           reject_unauthorized_connection
         end
       else
+        Rails.logger.warn "No participant ID provided"
         reject_unauthorized_connection
       end
     end

@@ -10,23 +10,25 @@ class Question < ApplicationRecord
   }
 
   def self.remove_with_condition(question_id)
-    # Tìm câu hỏi
     question = Question.find_by(id: question_id)
     return nil unless question
 
-    # Tìm tất cả các câu hỏi khác trong cùng quiz s
-    all_questions = Question.where(quiz_id: question.quiz_id)
-
-    position = question.position
-    all_questions.each do |q|
-      if q.position > position
-        # Giảm vị trí của câu hỏi xuống 1 nếu nó nằm sau câu hỏi bị xóa
-        q.update(position: q.position - 1)
+    ActiveRecord::Base.transaction do
+      # Giảm vị trí của các câu hỏi phía sau
+      Question.where(quiz_id: question.quiz_id)
+              .where("position > ?", question.position)
+              .find_each do |q|
+        q.position -= 1
+        q.save!  # raise exception nếu lỗi
       end
+
+      # Xóa câu hỏi
+      question.destroy!  # raise exception nếu lỗi
     end
 
-    # Xóa câu hỏi
-    return nil unless question.destroy
     true
+  rescue => e
+    Rails.logger.error("Lỗi khi xóa câu hỏi: #{e.message}")
+    nil
   end
 end

@@ -43,7 +43,7 @@ class Quiz::CreateController < ApplicationController
     # Các option và answer được xóa theo delete cascade
     # Chỉ cần xóa question khỏi table các question phụ thuộc sẽ được xóa
     # Đẩy tất cả cấu hỏi position lùi lại phần câu hỏi trước đó
-    if question.remove_with_condition(params[:question_id])
+    if Question.remove_with_condition(params[:question_id])
       render json: { message: 'Question removed successfully' }, status: :ok
     else
       render json: { error: 'Failed to remove question', details: question.errors.full_messages }, status: :unprocessable_entity

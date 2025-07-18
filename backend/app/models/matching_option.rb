@@ -16,4 +16,24 @@ class MatchingOption < ApplicationRecord
       true
     end
   end
+
+  def remove_option
+    ActiveRecord::Base.transaction do
+      # giảm position các option phía sau
+      MatchingOption.where(question_id: self.question_id)
+                  .where("side = ? AND position > ?", self.side, self.position)
+                  .each do |option|
+        option.position -= 1
+        option.save!  # raise nếu lỗi
+      end
+
+      # xóa bản thân
+      self.destroy!  # raise nếu lỗi
+    end
+
+    true
+  rescue => e
+    Rails.logger.error("Lỗi khi xóa option: #{e.message}")
+    false
+  end
 end

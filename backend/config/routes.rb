@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # Define the root path
+  mount ActionCable.server => '/cable'
+
   # Image upload route
   get '/storage/:id/:filename(.:format)',     to: 'files#show'
 
@@ -16,7 +19,7 @@ Rails.application.routes.draw do
       # Information general for all questions
       resources :general do
         member do
-          # Bao gồm về các nội dung có thể thay đổi toàn bộ sẽ được update
+          # Debounce các action này để tránh việc gửi quá nhiều request
           post "update",              to: "general#update"
         end
       end
@@ -24,9 +27,6 @@ Rails.application.routes.draw do
       # Choice question actions
       resources :choice do
         member do
-          # Debounce các action này để tránh việc gửi quá nhiều request
-          post "update_content",      to: "choice#update_content"
-
           # Not real-time
           post "add_option",          to: "choice#add_option"
           post "remove_option",       to: "choice#remove_option"
@@ -37,13 +37,11 @@ Rails.application.routes.draw do
       # Matching question actions
       resources :matching do
         member do
-          # Debounce các action này để tránh việc gửi quá nhiều request
-          post "update_content",      to: "choice#update_content"
-
           # Not real-time
-          post "add_option",          to: "choice#add_option"
-          post "remove_option",       to: "choice#remove_option"
-          post "matching_result",     to: "choice#matching_result"
+          post "add_option",          to: "matching#add_option"
+          post "remove_option",       to: "matching#remove_option"
+          post "add_result",          to: "matching#add_result"
+          post "remove_result",       to: "matching#remove_result"
         end
       end
 
@@ -51,7 +49,8 @@ Rails.application.routes.draw do
       resources :fill_in do
         member do
           # Debounce các action này để tránh việc gửi quá nhiều request
-          post "update_content",      to: "choice#update_content"
+          post "add_result",          to: "fill_in#add_result"
+          post "remove_result",       to: "fill_in#remove_result"
         end
       end
     end

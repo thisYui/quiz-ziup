@@ -121,14 +121,14 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
   end
 
   create_table "participations", force: :cascade do |t|
-    t.bigint "quiz_sessions_id", null: false
+    t.bigint "quiz_session_id", null: false
     t.string "participator_type"
     t.bigint "participator_id"
     t.integer "score", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["participator_type", "participator_id"], name: "index_participations_on_participator"
-    t.index ["quiz_sessions_id"], name: "index_participations_on_quiz_sessions_id"
+    t.index ["quiz_session_id"], name: "index_participations_on_quiz_session_id"
   end
 
   create_table "questions", force: :cascade do |t|
@@ -198,7 +198,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_29_073017) do
   add_foreign_key "matching_results", "matching_options", column: "option_left_id", on_delete: :cascade
   add_foreign_key "matching_results", "matching_options", column: "option_right_id", on_delete: :cascade
   add_foreign_key "matching_results", "questions"
-  add_foreign_key "participations", "quiz_sessions", column: "quiz_sessions_id", on_delete: :cascade
+  add_foreign_key "participations", "quiz_sessions", on_delete: :cascade
   add_foreign_key "questions", "quizzes"
   add_foreign_key "quiz_sessions", "quizzes", on_delete: :cascade
   add_foreign_key "quizzes", "users", column: "owner_user_id", on_delete: :cascade
