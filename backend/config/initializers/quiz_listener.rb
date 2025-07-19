@@ -22,11 +22,7 @@ Thread.new do
     loop do
       conn.wait_for_notify do |channel, _pid, payload|
         Rails.logger.info "Received notify on #{channel}: #{payload}"
-
-        data = JSON.parse(payload)
-        quiz_id = data["quiz_id"]
-
-        ActionCable.server.broadcast("quiz_#{quiz_id}", data)
+        SocketNotifier.one_player_joined(payload)
       end
     end
   rescue => e

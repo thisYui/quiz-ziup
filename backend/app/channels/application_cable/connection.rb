@@ -15,8 +15,8 @@ module ApplicationCable
     private
 
     def find_verified_user
-      participantion_id = params[:participantion_id]
-      quiz_id = params[:quiz_id]
+      participantion_id = request.params[:participantion_id]
+      quiz_id = request.params[:quiz_id]
 
       if participantion_id.present? && quiz_id.present?
         participantion = Participation.find_by(id: participantion_id)
@@ -26,6 +26,7 @@ module ApplicationCable
             id: participantion.id,
             quiz_id: quiz_id,
           }
+
         else
           Rails.logger.warn "Participant not found: #{participantion_id}"
           reject_unauthorized_connection

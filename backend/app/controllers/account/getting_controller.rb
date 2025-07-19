@@ -50,7 +50,7 @@ class Account::GettingController < ApplicationController
     # Có điểm và các câu đúng sai, đáp án và câu trả lời
     quiz_session_id = params[:quiz_session_id]
     participator_id = params[:participator_id]
-    info = QuizUtils.get_quiz_info(quiz_session_id, participator_id)
+    info = Quiz.get_quiz_info(quiz_session_id, participator_id)
     render json: info, status: :ok
   end
 end

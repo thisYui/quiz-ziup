@@ -1,47 +1,52 @@
 class Quiz::JoinController < ApplicationController
   def join
-    result = Quiz.find_quiz_by_code_and_key(params[:code], params[:key])
+    quiz = Quiz.find_quiz_by_code_and_key(params[:code], params[:key])
 
-    if result.nil?
-      render json: { error: 'Quiz not found' }, status: :not_found
-      return
-    elsif result == "no-key"
-      render json: { error: 'Quiz is private, key is required' }, status: :forbidden
-      return
-    elsif result == "invalid-key"
-      render json: { error: 'Invalid key for the quiz' }, status: :forbidden
+    error =
+      if quiz.nil?
+        ['Quiz not found', :not_found]
+      elsif quiz == Quiz::KEY[:NOT]
+        ['Quiz is private, key is required', :forbidden]
+      elsif quiz == Quiz::KEY[:INVALID]
+        ['Invalid key for the quiz', :forbidden]
+      end
+
+    if error
+      render json: { error: error[0] }, status: error[1]
       return
     end
 
-    quiz = result
     quiz_session = QuizSession.get_instance_session(quiz.id)
-    return unless is_true(quiz_session)
+    return head(:bad_request) unless is_true(quiz_session)
 
-    quiz_session.join(params[:participator_id], params[:participator_type])  # Join và ghi nhận tham gia
-    participants = quiz_session.get_list_participants
+    participator_id = quiz_session.join(params[:user_id], params[:full_name])
+    return head(:bad_request) unless is_true(participator_id)
 
     render json: {
+      participator_id: participator_id,
+      quiz_id: quiz.id,
       quiz_session: quiz_session,
-      participants: participants
+      participants: quiz_session.get_list_participants
     }, status: :ok
   end
 
+  def get
+    quiz = Quiz.find_by(id: params[:quiz_id])
+    return head(:not_found) unless is_true(quiz) and quiz
+
+    data_quiz = quiz.questions_with_content
+    render json: data_quiz, status: :ok
+  end
+
   def submit
-    # chưa viết
-  end
+    answer_params = params.require(:answer).permit(:quiz_session_id, :question_id, :participator_id, :option_id, :content)
+    answer = Answer.new(answer_params)
 
-  def start
-    quiz_session = QuizSession.new(quiz_id: params[:quiz_id])
-    return unless is_true(quiz_session.save)
-    render json: { message: 'Quiz created successfully' }, status: :ok
-  end
-
-  def end
-    quiz_session = QuizSession.get_instance_session(params[:quiz_id])
-    return unless is_true(quiz_session)
-    quiz_session.is_ended = true
-
-    return unless is_true(quiz_session.save)
-    render json: { message: 'Quiz ended successfully' }, status: :ok
+    if answer.save
+      QuestionUtils.add_answer_to_question(params[:data], answer.id, params[:type])
+      render json: { message: 'Answer added successfully' }, status: :ok
+    else
+      render json: { error: answer.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 end

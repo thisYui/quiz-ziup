@@ -9,6 +9,13 @@ class Question < ApplicationRecord
     extreme: 4
   }
 
+  TYPE = {
+    single_choice: 0,
+    multiple_choice: 1,
+    matching: 2,
+    fill_in: 3
+  }
+
   def self.remove_with_condition(question_id)
     question = Question.find_by(id: question_id)
     return nil unless question

@@ -1,13 +1,21 @@
 # Load môi trường Rails
 require_relative '../config/environment'
 
-participations = Participation.new(
-  quiz_session_id: 1,
-  participator: User.find(3)
-  )
+a = [
+  {
+    a: "test",
+    b: 123,
+    c: [1, 2, 3],
+  },
+  {
+    a: "test2",
+    b: 456,
+    c: [4, 5, 6],
+  }
+]
 
-if participations.save
-  puts "Participation created successfully!"
-else
-  puts "Failed to create participation: #{participations.errors.full_messages.join(', ')}"
-end
+encode = SimpleEncryptor.new.encrypt(a)
+puts "Encoded data: #{encode}"
+
+decode = SimpleEncryptor.new.decrypt(encode)
+puts "Decoded data: #{decode}"

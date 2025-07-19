@@ -18,25 +18,34 @@ class Quiz < ApplicationRecord
     other: 11
   }
 
+  KEY = {
+    NOT: 0,
+    INVALID: 1
+  }
+
   def self.find_quiz_by_code_and_key(code, key = nil)
     quiz = Quiz.find_by(code: code)
     return nil unless quiz
 
-    if quiz.is_private
-      if key.nil?
-        return "no-key"
-      end
-
-      if quiz.key != key
-        return "invalid-key"
-      end
-    end
+    return KEY[:NOT] if quiz.is_private && key.nil?
+    return KEY[:INVALID] if quiz.is_private && quiz.key != key
 
     quiz
   end
 
   def self.quiz_open
-    quiz_ids = QuizSession.where(is_ended: false).pluck(:quiz_id)
-    Quiz.where(id: quiz_ids).pluck(:id)
+    Quiz.where(id: QuizSession.where(is_ended: false)
+                              .select(:quiz_id))
+        .pluck(:id)
+  end
+
+  def self.get_quiz_info(quiz_session_id, participator_id)
+    Answer.where(quiz_session_id: quiz_session_id, participator_id: participator_id)
+          .map { |answer| QuestionUtils.get_content__answer__result(answer) }
+  end
+
+  def questions_with_content
+    Question.where(quiz_id: id)
+            .map{ |question| QuestionUtils.get_content__question(question) }
   end
 end
