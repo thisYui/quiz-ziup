@@ -29,6 +29,8 @@ class Quiz::OwnersController < ApplicationController
   end
 
   def final
-
+    quiz_id = params[:id]
+    SocketNotifier.next_question(quiz_id)
+    render json: { message: 'Next question' }, status: :ok
   end
 end
