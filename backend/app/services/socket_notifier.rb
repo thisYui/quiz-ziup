@@ -1,8 +1,13 @@
 class SocketNotifier
   TYPE_NOTIFICATION = {
-    joined: 0,
-    left: 1,
-    updated: 2
+    owner: 0,
+    joined: 1,
+    left: 0,
+    updated: 3,
+    started: 4,
+    result_question: 5,
+    next_question: 6,
+    final_quiz: 7
   }
 
   def self.one_player_joined(payload)
@@ -28,12 +33,31 @@ class SocketNotifier
     })
   end
 
-  def self.result_and_rating(payload)
-    data = JSON.parse(payload)
-    quiz_id = data["quiz_id"]
+  def self.start_quiz(quiz_id)
+    data = {}
 
     # Thêm cờ để xác định loại thông báo
-    data["type_notify"] = TYPE_NOTIFICATION[:updated]
+    data["type_notify"] = TYPE_NOTIFICATION[:started]
+    ActionCable.server.broadcast("quiz_#{quiz_id}", data)
+  end
+
+  def self.result_and_rating(data, quiz_id)
+    # Thêm cờ để xác định loại thông báo
+    data["type_notify"] = TYPE_NOTIFICATION[:result_question]
+    ActionCable.server.broadcast("quiz_#{quiz_id}", data)
+  end
+
+  def self.next_question(quiz_id)
+    data = {}
+
+    # Thêm cờ để xác định loại thông báo
+    data["type_notify"] = TYPE_NOTIFICATION[:next_question]
+    ActionCable.server.broadcast("quiz_#{quiz_id}", data)
+  end
+
+  def self.final_quiz(data, quiz_id)
+    # Thêm cờ để xác định loại thông báo
+    data["type_notify"] = TYPE_NOTIFICATION[:final_quiz]
     ActionCable.server.broadcast("quiz_#{quiz_id}", data)
   end
 end

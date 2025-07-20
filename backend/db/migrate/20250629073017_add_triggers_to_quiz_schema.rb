@@ -43,12 +43,56 @@ class AddTriggersToQuizSchema < ActiveRecord::Migration[7.1]
       FOR EACH ROW
       EXECUTE FUNCTION notify_quiz_participation();
     SQL
+
+    execute <<-SQL
+    -- INSERT: quiz bắt đầu
+      CREATE OR REPLACE FUNCTION notify_quiz_session_created()
+      RETURNS trigger AS $$
+      BEGIN
+        PERFORM pg_notify('quiz_session_created', NEW.quiz_id::text);
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+         
+      CREATE TRIGGER trigger_quiz_session_created
+      AFTER INSERT ON quiz_sessions
+      FOR EACH ROW
+      EXECUTE FUNCTION notify_quiz_session_created();
+    SQL
+
+    execute <<-SQL
+      CREATE OR REPLACE FUNCTION notify_quiz_session_ended()
+      RETURNS trigger AS $$
+      BEGIN
+        IF NEW.is_ended IS TRUE AND OLD.is_ended IS DISTINCT FROM NEW.is_ended THEN
+          PERFORM pg_notify('quiz_session_ended', NEW.quiz_id::text);
+        END IF;
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+         
+      CREATE TRIGGER trigger_quiz_session_ended
+      AFTER UPDATE ON quiz_sessions
+      FOR EACH ROW
+      WHEN (OLD.is_ended IS DISTINCT FROM NEW.is_ended)
+      EXECUTE FUNCTION notify_quiz_session_ended();
+    SQL
   end
 
   def down
     execute <<-SQL
       DROP TRIGGER IF EXISTS trigger_notify_new_participation ON participations;
       DROP FUNCTION IF EXISTS notify_quiz_participation();
+    SQL
+
+    execute <<-SQL
+      DROP TRIGGER IF EXISTS trigger_quiz_session_created ON quiz_sessions;
+      DROP FUNCTION IF EXISTS notify_quiz_session_created();
+    SQL
+
+    execute <<-SQL
+      DROP TRIGGER IF EXISTS trigger_quiz_session_ended ON quiz_sessions;
+      DROP FUNCTION IF EXISTS notify_quiz_session_ended();
     SQL
   end
 end

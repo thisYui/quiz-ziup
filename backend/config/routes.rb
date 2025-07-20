@@ -61,10 +61,15 @@ Rails.application.routes.draw do
     post "submit",                    to: "join#submit"
 
     # Owner actions
-    post "open",                      to: "join#open"
-    post "start",                     to: "join#start"
-    post "show_result",               to: "join#show_result"
-    post "next",                      to: "join#next"
+    resources :owners do
+      member do
+        post "open",                      to: "owners#open"
+        post "start",                     to: "owners#start"
+        post "show_result_question",      to: "owners#show_result_question"
+        post "next",                      to: "owners#next"
+        post "final",                     to: "owners#final"
+      end
+    end
 
     # Create actions
     post "create",                    to: "create#create"

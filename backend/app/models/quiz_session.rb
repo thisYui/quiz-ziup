@@ -25,14 +25,8 @@ class QuizSession < ApplicationRecord
     count_registered.to_i >= quiz.max_participants.to_i
   end
 
-  def check_close_register
-    if self.is_full(quiz_id)
-      self.is_ended = true
-      save
-    end
-  end
-
   def join(id, full_name)
+    return nil if is_full(quiz_id)
     quiz_session.join_user(id) if type
     quiz_session.join_client(full_name)
   end
@@ -47,8 +41,7 @@ class QuizSession < ApplicationRecord
     )
 
     increment!(:count_registered)
-    check_close_register
-    user_id
+    { participator_id: user.id, avatar_url: user.avatar_url }
   end
 
   def join_client(full_name)
@@ -60,8 +53,7 @@ class QuizSession < ApplicationRecord
     )
 
     increment!(:count_registered)
-    check_close_register
-    client.id
+    { participator_id: client.id, avatar_url: "../assets/images/default_avatar.png" }
   end
 
   def get_list_participants

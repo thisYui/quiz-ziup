@@ -15,8 +15,17 @@ module ApplicationCable
     private
 
     def find_verified_user
+      owner = request.params[:owner]
       participantion_id = request.params[:participantion_id]
       quiz_id = request.params[:quiz_id]
+
+      if owner.present? && quiz_id.present?
+        Rails.logger.info "Verified owner"
+        return {
+          owner: true,
+          quiz_id: quiz_id,
+        }
+      end
 
       if participantion_id.present? && quiz_id.present?
         participantion = Participation.find_by(id: participantion_id)

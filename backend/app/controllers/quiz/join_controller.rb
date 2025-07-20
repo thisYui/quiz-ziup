@@ -19,11 +19,11 @@ class Quiz::JoinController < ApplicationController
     quiz_session = QuizSession.get_instance_session(quiz.id)
     return head(:bad_request) unless is_true(quiz_session)
 
-    participator_id = quiz_session.join(params[:user_id], params[:full_name])
-    return head(:bad_request) unless is_true(participator_id)
+    participator = quiz_session.join(params[:user_id], params[:full_name])
+    return head(:bad_request) unless is_true(participator)
 
     render json: {
-      participator_id: participator_id,
+      participator: participator,
       quiz_id: quiz.id,
       quiz_session: quiz_session,
       participants: quiz_session.get_list_participants
@@ -43,7 +43,13 @@ class Quiz::JoinController < ApplicationController
     answer = Answer.new(answer_params)
 
     if answer.save
+      new_score = Participation.update_score(params[:participator_id], params[:score]) if params[:is_correct]
+      data = params[:data]
+      data[:score] = new_score if new_score
+
+      StorageAnswer.add_answer_to_storage(params[:quiz_id], params[:data])
       QuestionUtils.add_answer_to_question(params[:data], answer.id, params[:type])
+
       render json: { message: 'Answer added successfully' }, status: :ok
     else
       render json: { error: answer.errors.full_messages }, status: :unprocessable_entity

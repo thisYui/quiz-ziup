@@ -39,6 +39,10 @@ class Quiz < ApplicationRecord
         .pluck(:id)
   end
 
+  def is_closed?
+    QuizSession.exists?(quiz_id: id, is_ended: true)
+  end
+
   def self.get_quiz_info(quiz_session_id, participator_id)
     Answer.where(quiz_session_id: quiz_session_id, participator_id: participator_id)
           .map { |answer| QuestionUtils.get_content__answer__result(answer) }
