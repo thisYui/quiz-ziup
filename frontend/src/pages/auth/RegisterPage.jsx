@@ -1,9 +1,7 @@
-//import LoginForm from '../../components/auth/LoginForm.jsx';
+import AuthForms from '../../components/auth/AuthForms.jsx';
 
 export default function RegisterPage() {
     return (
-        <div>
-            <h2></h2>
-        </div>
+        <AuthForms formType="register" />
     );
 }

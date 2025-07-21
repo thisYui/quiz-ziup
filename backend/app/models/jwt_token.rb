@@ -12,10 +12,14 @@ class JwtToken < ApplicationRecord
 
   # Thêm token mới
 
-  def self.add_token(user_id, params = {})
+  def self.add_token(user_id, params, ip_address)
+    # Kiểm tra thông tin thiết bị
+    return nil unless params[:device] && params[:user_agent]
+
+    # Tạo một hash chứa thông tin JWT token
     jwt_token = {
       device: params[:device],
-      ip_address: params[:ip_address],
+      ip_address: ip_address,
       user_agent: params[:user_agent]
     }
 

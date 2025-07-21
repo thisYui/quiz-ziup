@@ -1,27 +1,23 @@
 class Auth::AuthenticationController < ApplicationController
   def login
     if params[:email].present? && params[:password].present?
-      login_with_password(params)
+      login_with_password
     elsif params[:jti].present?
-      login_with_jwt(params)
+      login_with_jwt
     else
       render json: { error: I18n.t('auth.login.invalid_params') }, status: :bad_request
     end
   end
 
   def register
-      user = User.new(
-          email: params[:email],
-          password: params[:password],
-      )
+    user = User.new(email: params[:email], password: params[:password])
 
-      return unless is_true(user.save)
-      render json: { message: I18n.t('account.update.success') }, status: :ok
+    return unless is_true(user.save)
+
+    render json: { message: I18n.t('account.update.success') }, status: :ok
   end
 
-
   def send_otp
-    # Gửi OTP đến email người dùng
     if OtpService.send_otp(params[:email])
       render json: { message: I18n.t('auth.otp.notice') }, status: :ok
     else
@@ -30,7 +26,6 @@ class Auth::AuthenticationController < ApplicationController
   end
 
   def confirm_otp
-    # xác nhận OTP
     if OtpService.confirm_otp(params[:email], params[:otp])
       render json: { message: I18n.t('auth.otp.success') }, status: :ok
     else
@@ -48,7 +43,6 @@ class Auth::AuthenticationController < ApplicationController
   end
 
   def logout
-    # Xóa session
     if JwtToken.delete_token(params[:token])
       render json: { message: I18n.t('auth.logout.success') }, status: :ok
     else
@@ -58,32 +52,30 @@ class Auth::AuthenticationController < ApplicationController
 
   private
 
-  def login_with_password(params)
+  def login_with_password
     user = User.find_by(email: params[:email])
-    return unless is_true(user) and user
+    return render json: { error: I18n.t('auth.login.failure') }, status: :unauthorized unless user
 
     if user.authenticate(params[:password])
-      # Tạo token hoặc session cho người dùng
+      ip_address = request.remote_ip
+
       if params[:remember_me]
-        jti = JwtToken.add_token(user.id, params[:jwt_token])
-        render json: { user_id: user_id, token: jti }, status: :ok
+        jti = JwtToken.add_token(user.id, params[:jwt_token], ip_address)
+        render json: { user_id: user.id, token: jti }, status: :ok
       else
-        render json: { user_id: user_id, token: nil }, status: :ok
+        render json: { user_id: user.id, token: nil }, status: :ok
       end
     else
       render json: { error: I18n.t('auth.login.failure') }, status: :unauthorized
-      nil
     end
   end
 
-  def login_with_jwt(params)
-    # Giải mã JWT token và lấy id
-    user_id = JwtToken.find_by_jti(params)
-    unless user_id
+  def login_with_jwt
+    user_id = JwtToken.find_by_jti(params[:jti])
+    if user_id
+      render json: { user_id: user_id, token: params[:jti] }, status: :ok
+    else
       render json: { error: I18n.t('auth.login.error_token') }, status: :unauthorized
-      return
     end
-
-    render json: { user_id: user_id, token: params[:jti] }, status: :ok
   end
 end

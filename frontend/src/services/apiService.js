@@ -36,11 +36,10 @@ export const authApi = {
     return response.data;
   },
 
-  register: async (email, password, birthDate) => {
+  register: async (email, password) => {
     const response = await apiClient.post('/auth/register', {
       email,
       password,
-      birth_date: birthDate,
     });
     return response.data;
   },
@@ -71,8 +70,8 @@ export const quizApi = {
     const response = await apiClient.post('/quiz/join', data);
     return response.data;
   },
-  submitAnswer: async (data) => {
-    const response = await apiClient.post('/quiz/submit_answer', data);
+  submit: async (data) => {
+    const response = await apiClient.post('/quiz/submit', data);
     return response.data;
   },
   create: async (data) => {

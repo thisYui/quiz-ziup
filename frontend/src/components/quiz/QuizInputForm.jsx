@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { useJoinQuiz } from '../../hooks/useQuiz.js';
 
-export function QuizInputForm({ onSubmit }) {
+export function QuizInputForm() {
   const [quizCode, setQuizCode] = useState('');
+    const { joinQuiz } = useJoinQuiz(); // gọi hook ở đầu component
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (quizCode.trim()) {
-      onSubmit(quizCode.trim());
-    }
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (quizCode.trim()) {
+            await joinQuiz(quizCode.trim()); // gọi hàm trả về từ hook
+        }
+    };
 
   return (
     <div className="w-full">
