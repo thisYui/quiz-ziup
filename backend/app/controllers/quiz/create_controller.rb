@@ -16,7 +16,7 @@ class Quiz::CreateController < ApplicationController
   end
 
   def delete
-    quiz = Quiz.where(id: params[:quiz_id], owner_user_id: params[:user_id]).first
+    quiz = Quiz.friendly.find(params[:quiz_id])
     return unless is_true(quiz) and quiz
 
     # Ensure only the owner can delete the quiz

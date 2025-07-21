@@ -14,14 +14,14 @@ class Account::GettingController < ApplicationController
   end
 
   def owner_quiz
-    id = params[:id]
-    quizzes = Quiz.where(user_id: id)
+    quizzes = Quiz.where(owner_user_id: params[:user_id])
 
     quizzes.map do |q|
       {
         id: q.id,
         name: q.name,
         code: q.code,
+        slug: q.slug,
         description: q.description
       }
     end

@@ -11,12 +11,22 @@ class Quiz < ApplicationRecord
     history: 5,
     geography: 6,
     music: 7,
-    art: 7,
-    technology: 8,
-    health: 9,
-    society: 10,
-    other: 11
+    art: 8,
+    technology: 9,
+    health: 10,
+    society: 11,
+    other: 12
   }
+
+  extend FriendlyId
+  friendly_id :title, use: [:slugged, :history] # lưu lịch sử slug cũ để redirect nếu cần
+
+  validates :title, presence: true
+  validates :slug, uniqueness: true
+
+  def should_generate_new_friendly_id?
+    will_save_change_to_title?  # rails 6+ dùng cái này thay cho title_changed?
+  end
 
   KEY = {
     NOT: 0,
@@ -52,4 +62,5 @@ class Quiz < ApplicationRecord
     Question.where(quiz_id: id)
             .map{ |question| QuestionUtils.get_content__question(question) }
   end
+
 end

@@ -1,7 +1,7 @@
 class Quiz::Question::MatchingController < ApplicationController
   def add_option
     option = MatchingOption.new(
-      question_id: params[:id],
+      question_id: params[:question_id],
       side: params[:side],
       position: params[:position]
     )
@@ -11,7 +11,7 @@ class Quiz::Question::MatchingController < ApplicationController
   end
 
   def remove_option
-    option = MatchingOption.find_by(id: params[:option_id], question_id: params[:id])
+    option = MatchingOption.find_by(id: params[:option_id], question_id: params[:question_id])
 
     return unless option and is_true(option.remove_option)
     render json: { message: 'Option removed successfully' }, status: :ok
@@ -19,7 +19,7 @@ class Quiz::Question::MatchingController < ApplicationController
 
   def add_result
     result = MatchingResult.new(
-      question_id: params[:id],
+      question_id: params[:question_id],
       left_option_id: params[:left_option_id],
       right_option_id: params[:right_option_id]
     )
@@ -29,7 +29,7 @@ class Quiz::Question::MatchingController < ApplicationController
   end
 
   def remove_result
-    result = MatchingResult.find_by(id: params[:result_id], question_id: params[:id])
+    result = MatchingResult.find_by(id: params[:result_id], question_id: params[:question_id])
 
     return unless result and is_true(result.remove_result)
     render json: { message: 'Result removed successfully' }, status: :ok

@@ -19,7 +19,7 @@ class QuizSession < ApplicationRecord
   end
 
   def is_full(quiz_id)
-    quiz = Quiz.find_by(id: quiz_id)
+    quiz = Quiz.friendly.find(quiz_id)
     return false unless quiz
 
     count_registered.to_i >= quiz.max_participants.to_i

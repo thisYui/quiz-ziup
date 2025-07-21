@@ -1,7 +1,7 @@
 class Quiz::Question::ChoiceController < ApplicationController
   def add_option
     option = ChoiceOption.new(
-      question_id: params[:id],
+      question_id: params[:question_id],
       content: params[:content],
       is_correct: false,
       position: params[:position]
@@ -12,14 +12,14 @@ class Quiz::Question::ChoiceController < ApplicationController
   end
 
   def remove_option
-    option = ChoiceOption.find_by(id: params[:option_id], question_id: params[:id])
+    option = ChoiceOption.find_by(id: params[:option_id], question_id: params[:question_id])
     return unless option and is_true(option.remove_option)
 
     render json: { message: 'Option removed successfully' }, status: :ok
   end
 
   def choice_result
-    result = ChoiceOption.find_by(id: params[:option_id], question_id: params[:id])
+    result = ChoiceOption.find_by(id: params[:option_id], question_id: params[:question_id])
     return unless result and is_true(result.update(is_correct: true))
 
     render json: { result: result }, status: :ok

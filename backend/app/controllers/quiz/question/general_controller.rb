@@ -4,7 +4,7 @@ class Quiz::Question::GeneralController < ApplicationController
     # Bao gồm :
     #    Dữ liệu thuộc Question
     #    Dữ liệu thuộc Option và Result
-    question_id = params[:id]
+    question_id = params[:question_id]
     question = Question.find_by(id: question_id)
     return unless is_true(question) and question
 

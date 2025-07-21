@@ -39,7 +39,7 @@ class Auth::AuthenticationController < ApplicationController
   end
 
   def renew_token
-    new_jti = JwtToken.renew_token(params)
+    new_jti = JwtToken.renew_token(params[:token])
     if new_jti
       render json: { token: new_jti }, status: :ok
     else
@@ -49,7 +49,7 @@ class Auth::AuthenticationController < ApplicationController
 
   def logout
     # Xóa session
-    if JwtToken.delete_token(params)
+    if JwtToken.delete_token(params[:token])
       render json: { message: I18n.t('auth.logout.success') }, status: :ok
     else
       render json: { error: I18n.t('auth.logout.failure') }, status: :unprocessable_entity

@@ -1,6 +1,6 @@
 class Quiz::UpdateController < ApplicationController
   def update_name
-    quiz = Quiz.where(id: params[:quiz_id], owner_user_id: params[:user_id])
+    quiz = Quiz.friendly.find(params[:quiz_id])
     return unless is_true(quiz) and quiz
 
     # Ensure only the owner can update the quiz name
@@ -14,7 +14,7 @@ class Quiz::UpdateController < ApplicationController
   end
 
   def update_description
-    quiz = Quiz.where(id: params[:quiz_id], owner_user_id: params[:user_id])
+    quiz = Quiz.friendly.find(params[:quiz_id])
     return unless is_true(quiz) and quiz
 
     # Ensure only the owner can update the quiz name
@@ -28,7 +28,7 @@ class Quiz::UpdateController < ApplicationController
   end
 
   def update_code
-    quiz = Quiz.where(id: params[:quiz_id], owner_user_id: params[:user_id])
+    quiz = Quiz.friendly.find(params[:quiz_id])
     return unless is_true(quiz) and quiz
 
     # Ensure only the owner can update the quiz code
@@ -46,7 +46,7 @@ class Quiz::UpdateController < ApplicationController
   end
 
   def update_is_private
-    quiz = Quiz.where(id: params[:quiz_id], owner_user_id: params[:user_id])
+    quiz = Quiz.friendly.find(params[:quiz_id])
     return unless is_true(quiz) and quiz
 
     # Ensure only the owner can update the quiz status
@@ -60,7 +60,7 @@ class Quiz::UpdateController < ApplicationController
   end
 
   def update_topic
-    quiz = Quiz.where(id: params[:quiz_id], owner_user_id: params[:user_id])
+    quiz = Quiz.friendly.find(params[:quiz_id])
     return unless is_true(quiz) and quiz
 
     # Ensure only the owner can update the quiz topic

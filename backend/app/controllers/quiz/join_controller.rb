@@ -25,13 +25,14 @@ class Quiz::JoinController < ApplicationController
     render json: {
       participator: participator,
       quiz_id: quiz.id,
+      quiz_slug: quiz.slug,
       quiz_session: quiz_session,
       participants: quiz_session.get_list_participants
     }, status: :ok
   end
 
   def get
-    quiz = Quiz.find_by(id: params[:quiz_id])
+    quiz = Quiz.friendly.find(params[:quiz_id])
     return head(:not_found) unless is_true(quiz) and quiz
 
     data_quiz = quiz.questions_with_content
