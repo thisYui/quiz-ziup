@@ -10,6 +10,8 @@ export default function LoginForm({ formData, handleInputChange, setCurrentStep 
     const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false)
     const [rememberMe, setRememberMe] = useState(false)
+    const [loginError, setLoginError] = useState(false)
+
 
     const handleLogin = async () => {
         try {
@@ -20,8 +22,9 @@ export default function LoginForm({ formData, handleInputChange, setCurrentStep 
             const response = await authApi.login(formData.email, formData.password, rememberMe, deviceInfo);
             if (response.user_id) {
                 sessionStorage.setItem("user_id", response.user_id);
-            } else {
-                alert("Login failed");
+                navigate(`/${response.user_id}/home`);
+            } else if (response.fail) {
+                setLoginError(true);
             }
         } catch (error) {
             console.error("Error during login:", error);
@@ -107,6 +110,12 @@ export default function LoginForm({ formData, handleInputChange, setCurrentStep 
                 </div>
             </div>
 
+            { loginError && (
+                <div className="text-sm text-red-500 font-medium mb-2">
+                    Đăng nhập thất bại. Vui lòng kiểm tra lại email và mật khẩu.
+                </div>
+            )}
+
             <div className="flex items-center justify-between">
                 <label className="flex items-center space-x-2">
                     <input
@@ -160,7 +169,7 @@ export default function LoginForm({ formData, handleInputChange, setCurrentStep 
                         setCurrentStep("register");
                         navigate("/auth/register");
                     }}
-                    className="font-semibold transition-colors"
+                    className="font-semibold transition-colors cursor-pointer"
                     style={{ color: "#2563EB" }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = "#14B8A6")}
                     onMouseLeave={(e) => (e.currentTarget.style.color = "#2563EB")}

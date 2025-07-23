@@ -43,6 +43,25 @@ class Quiz < ApplicationRecord
     quiz
   end
 
+  def self.create(data)
+    code = data[:code]
+    return nil if Quiz.exists?(code: code)
+
+    quiz = Quiz.new(
+      owner_user_id: data[:owner_user_id],
+      code: code,
+      description: data[:description],
+      title: data[:title],
+      is_private: data[:is_private],
+      max_participants: data[:max_participants],
+      topic: data[:topic],
+      key: data[:key]
+    )
+    return nil unless quiz.save
+
+    quiz
+  end
+
   def self.quiz_open
     Quiz.where(id: QuizSession.where(is_ended: false)
                               .select(:quiz_id))

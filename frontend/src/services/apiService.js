@@ -70,8 +70,12 @@ export const quizApi = {
     const response = await apiClient.post('/quiz/join', data);
     return response.data;
   },
-  submit: async (data) => {
-    const response = await apiClient.post('/quiz/submit', data);
+  get: async (quiz_id) => {
+    const response = await apiClient.post(`/quiz/${quiz_id}/get`, );
+    return response.data;
+  },
+  submit: async (quiz_id) => {
+    const response = await apiClient.post(`/quiz/${quiz_id}/submit`);
     return response.data;
   },
   create: async (data) => {
@@ -83,8 +87,12 @@ export const quizApi = {
 
 // Account API methods - placeholder for future implementation
 export const accountApi = {
-  getInformation: async () => {
-    const response = await apiClient.post('/account/information');
+  getInformation: async (userId) => {
+    const response = await apiClient.post(`/account/${userId}/information`);
+    return response.data;
+  },
+  getOwnerQuiz: async (userId) => {
+    const response = await apiClient.post(`/account/${userId}/owner_quiz`);
     return response.data;
   },
   updateName: async (name) => {

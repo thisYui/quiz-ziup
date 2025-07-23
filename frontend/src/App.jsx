@@ -5,11 +5,15 @@ import QuizRoutes from "./routes/QuizRoutes.jsx";
 import AccountRoutes from "./routes/AccountRoutes.jsx";
 import ViewRoutes from "./routes/ViewRoutes.jsx";
 
+import LobbyPage from "./pages/quiz/LobbyPage.jsx";
+import ShowQuizPage from "./pages/view/ShowQuizPage.jsx";
+import CreateQuizPage from "./pages/quiz/CreateQuizPage.jsx";
+
 function App() {
   return (
       <Router>
         <Routes>
-          <Route path="/" element={<IndexPage />} />
+          <Route path="/" element={<CreateQuizPage />} />
           <Route path="/auth/*" element={<AuthRoutes />} />
           <Route path="/account/*" element={<AccountRoutes />} />
           <Route path="/quiz/*" element={<QuizRoutes />} />

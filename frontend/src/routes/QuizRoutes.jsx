@@ -3,7 +3,7 @@ import LobbyPage from "../pages/Quiz/LobbyPage.jsx";
 import PlayPage from "../pages/Quiz/PlayPage.jsx";
 import ResultPage from "../pages/Quiz/ResultPage.jsx";
 import FinalPage from "../pages/Quiz/FinalPage.jsx";
-import EditQuizPage from "../pages/Quiz/EditQuizPage.jsx";
+import CreateQuizPage from "../pages/quiz/CreateQuizPage.jsx";
 import QuestionRoutes from "./QuestionRoutes.jsx";
 
 export default function QuizRoutes() {
@@ -15,7 +15,8 @@ export default function QuizRoutes() {
             <Route path=":quiz_id/result" element={<ResultPage />} />
             <Route path=":quiz_id/final" element={<FinalPage />} />
 
-            <Route path=":quiz_id/edit" element={<EditQuizPage />} />
+
+            <Route path=":quiz_id/create" element={<CreateQuizPage />} />
             <Route path=":quiz_id/question/*" element={<QuestionRoutes />} />
         </Routes>
     );

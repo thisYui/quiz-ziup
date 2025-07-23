@@ -1,18 +1,11 @@
 class Quiz::CreateController < ApplicationController
   def create
-    quiz = Quiz.new(
-      owner_user_id: params[:user_id],
-      code: params[:code],
-      description: params[:description],
-      title: params[:title],
-      is_private: params[:is_private],
-      max_participants: params[:max_participants],
-      topic: params[:topic],
-      key: params[:key]
-    )
-
-    return unless is_true(quiz.save)
-    render json: { message: 'Quiz created successfully' }, status: :ok
+    quiz = Quiz.create(params)
+    if quiz.nil?
+      render json: { error: "Quiz is exists" }, status: :unprocessable_entity
+      return
+    end
+    render json: { quiz_id: quiz.id, quiz_slug: quiz.slug }, status: :ok
   end
 
   def delete

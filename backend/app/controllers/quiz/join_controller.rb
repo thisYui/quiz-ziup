@@ -2,17 +2,20 @@ class Quiz::JoinController < ApplicationController
   def join
     quiz = Quiz.find_quiz_by_code_and_key(params[:code], params[:key])
 
+    code_error = nil
     error =
       if quiz.nil?
         ['Quiz not found', :not_found]
       elsif quiz == Quiz::KEY[:NOT]
         ['Quiz is private, key is required', :forbidden]
+        code_error = 0
       elsif quiz == Quiz::KEY[:INVALID]
         ['Invalid key for the quiz', :forbidden]
+        code_error = 1
       end
 
     if error
-      render json: { error: error[0] }, status: error[1]
+      render json: { error: error[0], code_error: code_error }, status: error[1]
       return
     end
 
@@ -27,6 +30,8 @@ class Quiz::JoinController < ApplicationController
       quiz_id: quiz.id,
       quiz_slug: quiz.slug,
       quiz_session: quiz_session,
+      quiz_title: quiz.title,
+      max_participants: quiz.max_participants,
       participants: quiz_session.get_list_participants
     }, status: :ok
   end

@@ -1,20 +1,35 @@
-import { useNavigate } from 'react-router-dom';
 import { quizApi } from '../services/apiService.js';
 
-export function useJoinQuiz() {
-    const navigate = useNavigate();
+export function useQuiz() {
 
     const joinQuiz = async (quizCode) => {
         try {
-            const data = await quizApi.join({ code: quizCode });
+            return await quizApi.join({code: quizCode});
 
-            // ví dụ: data trả về có `quiz_id` hoặc `slug`
-            navigate(`/quiz/${data.slug}/lobby`);
         } catch (err) {
-            console.error(err);
-            alert('Invalid quiz code');
+            if (err.response?.status === 404) {
+                // not found
+                return { error: 404, message: 'Quiz not found' };
+            }  else if (err.response?.status === 403) {
+                // forbidden
+                const code = err.response.data.code_error;
+                return { error: 403, type: code};
+            } else {
+                console.error(err);
+                alert("Đã xảy ra lỗi. Vui lòng thử lại.");
+            }
         }
     };
 
-    return { joinQuiz };
+    const getQuiz = async (quizId) => {
+        try {
+            return await quizApi.get(quizId);
+        } catch (err) {
+            console.error(err);
+            alert("Đã xảy ra lỗi khi lấy thông tin quiz. Vui lòng thử lại.");
+            return null;
+        }
+    }
+
+    return { joinQuiz, getQuiz };
 }

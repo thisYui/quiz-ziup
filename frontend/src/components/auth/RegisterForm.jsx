@@ -75,39 +75,6 @@ export default function RegisterForm({ formData, handleInputChange, setCurrentSt
             />
           </div>
         </div>
-
-        <div>
-          <Label htmlFor="phone" className="text-sm font-medium" style={{ color: "#F5F5F5" }}>
-            Phone Number
-          </Label>
-          <div className="relative mt-1">
-            <Phone
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4"
-              style={{ color: "#888888" }}
-            />
-            <Input
-              id="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => handleInputChange("phone", e.target.value)}
-              className="pl-10 h-12 border-2 transition-all duration-200"
-              style={{
-                backgroundColor: "#2A2A2A",
-                borderColor: "#666666",
-                color: "#F5F5F5",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "#2563EB"
-                e.target.style.boxShadow = "0 0 0 1px #2563EB"
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "#666666"
-                e.target.style.boxShadow = "none"
-              }}
-              placeholder="Enter your phone number"
-            />
-          </div>
-        </div>
       </div>
 
       <Button
@@ -136,7 +103,7 @@ export default function RegisterForm({ formData, handleInputChange, setCurrentSt
             setCurrentStep("login");
             navigate("/auth/login");
           }}
-          className="font-semibold transition-colors"
+          className="font-semibold transition-colors cursor-pointer"
           style={{ color: "#2563EB" }}
           onMouseEnter={(e) => (e.currentTarget.style.color = "#14B8A6")}
           onMouseLeave={(e) => (e.currentTarget.style.color = "#2563EB")}

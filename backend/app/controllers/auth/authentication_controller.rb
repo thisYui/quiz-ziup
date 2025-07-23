@@ -66,7 +66,7 @@ class Auth::AuthenticationController < ApplicationController
         render json: { user_id: user.id, token: nil }, status: :ok
       end
     else
-      render json: { error: I18n.t('auth.login.failure') }, status: :unauthorized
+      render json: { fail: I18n.t('auth.login.failure') }, status: :unauthorized
     end
   end
 
@@ -75,7 +75,7 @@ class Auth::AuthenticationController < ApplicationController
     if user_id
       render json: { user_id: user_id, token: params[:jti] }, status: :ok
     else
-      render json: { error: I18n.t('auth.login.error_token') }, status: :unauthorized
+      render json: { fail: I18n.t('auth.login.error_token') }, status: :unauthorized
     end
   end
 end

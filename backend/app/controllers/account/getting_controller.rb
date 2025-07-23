@@ -19,7 +19,8 @@ class Account::GettingController < ApplicationController
     quizzes.map do |q|
       {
         id: q.id,
-        name: q.name,
+        title: q.title,
+        topic: q.topic,
         code: q.code,
         slug: q.slug,
         description: q.description
