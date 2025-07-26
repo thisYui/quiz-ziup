@@ -82,7 +82,10 @@ export const quizApi = {
     const response = await apiClient.post('/quiz/create', data);
     return response.data;
   },
-  // Additional quiz endpoints can be added here as needed
+  add_question: async (quiz_id, question_data) => {
+    const response = await apiClient.post(`/quiz/${quiz_id}/add_question`, question_data);
+    return response.data;
+  }
 };
 
 // Account API methods - placeholder for future implementation

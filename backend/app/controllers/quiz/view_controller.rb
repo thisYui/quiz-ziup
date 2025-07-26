@@ -22,6 +22,20 @@ class Quiz::ViewController < ApplicationController
     render json: { all_sessions: all_sessions, info_quiz_session: info_quiz_session }, status: :ok
   end
 
+  def get_content_quiz
+    # Lấy nội dung của quiz
+    # Trả về danh sách các câu hỏi và thông tin quiz
+
+    quiz_id = params[:quiz_id]
+    quiz = Quiz.find_by(id: quiz_id)
+    return unless quiz and is_true(quiz)
+
+    quiz_content = quiz.get_content
+    return unless is_true(quiz_content)
+
+    render json: { quiz_content: quiz_content }, status: :ok
+  end
+
   def info_session
     # Lấy thông tin của một quiz session cụ thể
     # Tương tự như show nhưng chỉ lấy thông tin của một session

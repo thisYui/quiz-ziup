@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { BGPattern } from "../../components/ui/BGPattern.jsx";
 import { Navbar } from "../../components/home/Navbar.jsx";
 import { useNavigate } from "react-router-dom";
+import { useQuizStore } from "../../hooks/useQuiz.js";
 import { quizApi } from "../../services/apiService.js";
 import { QuizBasicInfoComponent, QuizPrivacySettingsComponent,
     QuizParticipantSettingsComponent, QuizTopicSelectorComponent,
     QuizFormActionsComponent } from "../../components/quiz/form/index.js";
+
 export default function CreateQuizPage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -17,6 +19,7 @@ export default function CreateQuizPage() {
     const [privateKey, setPrivateKey] = useState('');
     const [topic, setTopic] = useState('');
     const navigator = useNavigate();
+    const { setQuizData, setNeverStarted } = useQuizStore();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -48,6 +51,13 @@ export default function CreateQuizPage() {
         const { quiz_id, quiz_slug } = response;
         sessionStorage.setItem('quiz_id', quiz_id);
         sessionStorage.setItem('quiz_slug', quiz_slug);
+
+        data.quiz_id = quiz_id;
+        data.quiz_slug = quiz_slug;
+
+        setQuizData(data);
+        setNeverStarted(true);
+
         navigator(`/quiz/${quiz_slug}/edit`);
     };
 

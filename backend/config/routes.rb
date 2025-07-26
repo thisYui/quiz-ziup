@@ -66,6 +66,7 @@ Rails.application.routes.draw do
 
     # View actions
     post ":quiz_id/show",                      to: "view#show"
+    post ":quiz_id/get_content_quiz",          to: "view#get_content_quiz"
     post ":quiz_id/info_session",              to: "view#info_session"
     post ":quiz_id/statistical",               to: "view#statistical"
   end

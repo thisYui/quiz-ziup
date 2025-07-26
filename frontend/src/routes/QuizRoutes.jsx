@@ -4,7 +4,8 @@ import PlayPage from "../pages/Quiz/PlayPage.jsx";
 import ResultPage from "../pages/Quiz/ResultPage.jsx";
 import FinalPage from "../pages/Quiz/FinalPage.jsx";
 import CreateQuizPage from "../pages/quiz/CreateQuizPage.jsx";
-import QuestionRoutes from "./QuestionRoutes.jsx";
+import EditQuizPage from "../pages/quiz/EditQuizPage.jsx";
+import MainQuizPage from "../pages/quiz/MainQuizPage.jsx";
 
 export default function QuizRoutes() {
     return (
@@ -17,7 +18,8 @@ export default function QuizRoutes() {
 
 
             <Route path=":quiz_id/create" element={<CreateQuizPage />} />
-            <Route path=":quiz_id/question/*" element={<QuestionRoutes />} />
+            <Route path=":quiz_id/edit" element={<EditQuizPage />} />
+            <Route path=":quiz_id/content" element={<MainQuizPage />} />
         </Routes>
     );
 }

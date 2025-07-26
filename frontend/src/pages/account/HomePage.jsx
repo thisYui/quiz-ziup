@@ -6,7 +6,6 @@ import { Hero } from '../../components/index/Hero.jsx';
 import { Navbar } from '../../components/home/Navbar.jsx';
 
 export default function HomePage() {
-
     return (
         <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#0D0D0D' }}>
             {/* bg pattern */}

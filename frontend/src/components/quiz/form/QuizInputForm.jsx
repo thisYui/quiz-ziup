@@ -4,6 +4,7 @@ import { Button } from '../../ui/button';
 import { InputField } from '../../ui/InputField';
 import { ErrorMessage } from '../../ui/ErrorMessage';
 import { useQuiz } from '../../../hooks/useQuiz.js';
+import { ERROR } from "../../../constants/index.js";
 
 export default function QuizInputForm({ is_client = false }) {
     const [quizCode, setQuizCode] = useState('');
@@ -25,12 +26,12 @@ export default function QuizInputForm({ is_client = false }) {
             });
 
             if (response?.error) {
-                if (response.error === 404) {
+                if (response.error === ERROR.not_found.code) {
                     setNotFoundQuiz(true);
-                } else if (response.error === 403) {
-                    if (response.type === 0) {  // type 0: require key
+                } else if (response.error === ERROR.forbidden.code) {
+                    if (response.type === ERROR.forbidden.sub_code.require_key) {
                         setRequireKey(true);
-                    } else if (response.type === 1) { // type 1: key invalid
+                    } else if (response.type === ERROR.forbidden.sub_code.key_invalid) {
                         setAccessKeyError(true); // 2: key invalid
                     } else {
                         alert('You do not have permission to join this quiz.');

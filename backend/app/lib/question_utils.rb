@@ -81,7 +81,7 @@ class QuestionUtils
   end
 
   def self.get_content__answer__result(answers)
-    question = Question.find_by(id: answers.question_id)
+    question = Question.find_by(id: answers.question_id, hide: false)
     return nil unless question
 
     _question = {
@@ -163,7 +163,8 @@ class QuestionUtils
       type: question.question_type,
       level: question.level,
       time: question.time,
-      score: question.score
+      score: question.score,
+      hide: question.hide
     }
 
     case question.question_type

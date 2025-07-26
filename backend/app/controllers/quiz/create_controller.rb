@@ -23,13 +23,13 @@ class Quiz::CreateController < ApplicationController
 
   def add_question
     # Lưu question vào table
-    question = Question.new(params[:question])
+    question = Question.new(params)
 
     # API này sẽ không quan tâm loại question
     # Mặc định ban đầu sẽ không có bất kì answer hay option nào
     # Việc cập nhật cho mỗi loại sẽ cho api khác phụ trách
     return unless is_true(question.save)
-    render json: { message: 'Question added successfully' }, status: :ok
+    render json: { question_id: question.id }, status: :ok
   end
 
   def remove_question

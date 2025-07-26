@@ -1,19 +1,20 @@
 import { quizApi } from '../services/apiService.js';
+import { create } from 'zustand';
+import { ERROR } from "../constants/index.js";
 
 export function useQuiz() {
-
     const joinQuiz = async (quizCode) => {
         try {
             return await quizApi.join({code: quizCode});
 
         } catch (err) {
-            if (err.response?.status === 404) {
+            if (err.response?.status === ERROR.not_found.code) {
                 // not found
-                return { error: 404, message: 'Quiz not found' };
-            }  else if (err.response?.status === 403) {
+                return { error: ERROR.not_found.code, message: 'Quiz not found' };
+            }  else if (err.response?.status === ERROR.forbidden.code) {
                 // forbidden
                 const code = err.response.data.code_error;
-                return { error: 403, type: code};
+                return { error: ERROR.forbidden.code, type: code};
             } else {
                 console.error(err);
                 alert("Đã xảy ra lỗi. Vui lòng thử lại.");
@@ -33,3 +34,24 @@ export function useQuiz() {
 
     return { joinQuiz, getQuiz };
 }
+
+export const useQuizStore = create((set) => ({
+    quizData: {},
+    neverStarted: true,
+    questionData: [
+        // {
+        //     question: {},
+        //     options: [{...},...],
+        //     results: [{...},...],
+        // }
+    ],
+
+    setQuizData: (data) => { set({ quizData: data }); },
+    setNeverStarted: (value) => set({ neverStarted: value }),
+    setQuestionData: (data) => { set({ questionData: data }); },
+
+    clearQuizData: () => {
+        set({ quizData: {}, neverStarted: true, questionData: [] });
+    },
+
+}));

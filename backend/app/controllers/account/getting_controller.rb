@@ -23,7 +23,11 @@ class Account::GettingController < ApplicationController
         topic: q.topic,
         code: q.code,
         slug: q.slug,
-        description: q.description
+        description: q.description,
+        is_private: q.is_private,
+        max_participants: q.max_participants,
+        key: q.key,
+        never_started: not QuizSession.exists?(quiz_id: q.id)
       }
     end
   end

@@ -82,4 +82,22 @@ class Quiz < ApplicationRecord
             .map{ |question| QuestionUtils.get_content__question(question) }
   end
 
+  def get_content
+    Question.where(quiz_id: id).map do |question|
+      case question.question_type
+      when Question::TYPE[:single_choice], Question::TYPE[:multiple_choice]
+        options = ChoiceOption.where(question_id: question.id).to_a
+        { question: question, options: options }
+      when Question::TYPE[:matching]
+        options = MatchingOption.where(question_id: question.id).to_a
+        results = MatchingResult.where(question_id: question.id).to_a
+        { question: question, options: options, results: results }
+      when Question::TYPE[:fill_in]
+        results = FillResult.where(question_id: question.id).to_a
+        { question: question, results: results }
+      else
+        {  question: question }
+      end
+    end
+  end
 end
