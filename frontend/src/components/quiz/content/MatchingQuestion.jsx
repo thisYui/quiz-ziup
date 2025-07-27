@@ -1,323 +1,235 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react";
+import AnswerForm from "./AnswerForm.jsx";
 
-export default function MatchingQuestion({ options, results }) {
-    const [selectedLevel, setSelectedLevel] = useState(1)
-    const [timeLimit, setTimeLimit] = useState(30)
-    const [question, setQuestion] = useState("")
-    const [leftItems, setLeftItems] = useState([
-        { id: 1, text: "" },
-        { id: 2, text: "" },
-    ])
-    const [rightItems, setRightItems] = useState([
-        { id: 1, text: "" },
-        { id: 2, text: "" },
-        { id: 3, text: "" },
-        { id: 4, text: "" },
-    ])
-    const [connections, setConnections] = useState([])
-    const [draggedItem, setDraggedItem] = useState(null)
-    const [draggedSide, setDraggedSide] = useState(null)
+export default function MatchingQuestion({ options = [], results = [] }) {
+    const [leftItems, setLeftItems] = useState([]);
+    const [rightItems, setRightItems] = useState([]);
+    const [connections, setConnections] = useState([]);
+    const [draggedItem, setDraggedItem] = useState(null);
+    const [draggedSide, setDraggedSide] = useState(null);
 
-    const questionTypes = [
-        { id: "single-choice", name: "Single Choice" },
-        { id: "multi-choice", name: "Multi Choice" },
-        { id: "matching", name: "Matching" },
-        { id: "fill-in", name: "Fill In" },
-    ]
+    const leftRefs = useRef({});
+    const rightRefs = useRef({});
 
-    const handleLeftItemChange = (id, text) => {
-        setLeftItems(leftItems.map((item) => (item.id === id ? { ...item, text } : item)))
-    }
+    // Initialize from props
+    useEffect(() => {
+        const left = options.filter(opt => opt.side === 0);
+        const right = options.filter(opt => opt.side === 1);
+        setLeftItems(left);
+        setRightItems(right);
 
-    const handleRightItemChange = (id, text) => {
-        setRightItems(rightItems.map((item) => (item.id === id ? { ...item, text } : item)))
-    }
+        const initConnections = results.map(res => ({
+            leftId: res.option_left_id,
+            rightId: res.option_right_id
+        }));
+        setConnections(initConnections);
+    }, [options, results]);
 
-    const addLeftItem = () => {
-        const newId = Math.max(...leftItems.map((item) => item.id)) + 1
-        setLeftItems([...leftItems, { id: newId, text: "" }])
-    }
+    const handleItemChange = (id, side, value) => {
+        const updateFn = side === "left" ? setLeftItems : setRightItems;
+        const list = side === "left" ? leftItems : rightItems;
+        updateFn(
+            list.map(item => (item.id === id ? { ...item, text: value } : item))
+        );
+    };
 
-    const addRightItem = () => {
-        const newId = Math.max(...rightItems.map((item) => item.id)) + 1
-        setRightItems([...rightItems, { id: newId, text: "" }])
-    }
+    const addItem = (side) => {
+        const list = side === "left" ? leftItems : rightItems;
+        const updateFn = side === "left" ? setLeftItems : setRightItems;
+        const newId = Date.now();
+        updateFn([...list, { id: newId, text: "", side: side === "left" ? 0 : 1 }]);
+    };
 
-    const removeLeftItem = (id) => {
-        if (leftItems.length > 1) {
-            setLeftItems(leftItems.filter((item) => item.id !== id))
-            setConnections(connections.filter((conn) => conn.leftId !== id))
+    const removeItem = (id, side) => {
+        const list = side === "left" ? leftItems : rightItems;
+        const updateFn = side === "left" ? setLeftItems : setRightItems;
+        if (list.length > 1) {
+            updateFn(list.filter(item => item.id !== id));
+            setConnections(
+                connections.filter(conn =>
+                    side === "left" ? conn.leftId !== id : conn.rightId !== id
+                )
+            );
         }
-    }
-
-    const removeRightItem = (id) => {
-        if (rightItems.length > 1) {
-            setRightItems(rightItems.filter((item) => item.id !== id))
-            setConnections(connections.filter((conn) => conn.rightId !== id))
-        }
-    }
+    };
 
     const handleDragStart = (item, side) => {
-        setDraggedItem(item)
-        setDraggedSide(side)
-    }
+        setDraggedItem(item);
+        setDraggedSide(side);
+    };
 
     const handleDrop = (targetItem, targetSide) => {
-        if (!draggedItem || draggedSide === targetSide) return
+        if (!draggedItem || draggedSide === targetSide) return;
 
         const newConnection = {
             leftId: draggedSide === "left" ? draggedItem.id : targetItem.id,
-            rightId: draggedSide === "right" ? draggedItem.id : targetItem.id,
-        }
+            rightId: draggedSide === "right" ? draggedItem.id : targetItem.id
+        };
 
-        // Remove existing connections for these items
-        const filteredConnections = connections.filter(
-            (conn) => conn.leftId !== newConnection.leftId && conn.rightId !== newConnection.rightId,
-        )
+        // Remove existing connections for either side
+        const filtered = connections.filter(
+            conn =>
+                conn.leftId !== newConnection.leftId &&
+                conn.rightId !== newConnection.rightId
+        );
 
-        setConnections([...filteredConnections, newConnection])
-        setDraggedItem(null)
-        setDraggedSide(null)
-    }
+        setConnections([...filtered, newConnection]);
+        setDraggedItem(null);
+        setDraggedSide(null);
+    };
 
     const removeConnection = (leftId, rightId) => {
-        setConnections(connections.filter((conn) => !(conn.leftId === leftId && conn.rightId === rightId)))
-    }
+        setConnections(
+            connections.filter(conn => !(conn.leftId === leftId && conn.rightId === rightId))
+        );
+    };
 
     return (
-        <div className="flex-1 p-6">
-            <div className="max-w-6xl mx-auto">
-                {/* Top Controls */}
-                <div className="flex items-center gap-4 mb-6=">
-                    <div className="flex items-center gap-2">
-                        <span className="px-4 py-2 bg-[#F59E0B] rounded-lg text-black font-medium">level</span>
-                        <span className="text-[#CCCCCC]">can change</span>
-                    </div>
+        <div>
+            <AnswerForm />
 
-                    <div className="flex items-center gap-2">
+            <div className="relative">
+                <div className="flex flex-wrap gap-12 justify-between mb-6">
+                    {/* Left Column */}
+                    <div className="flex-1 min-w-[300px] space-y-4">
+                        {leftItems.map((item, index) => (
+                            <div
+                                key={item.id}
+                                className="relative"
+                                draggable
+                                onDragStart={() => handleDragStart(item, "left")}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={() => handleDrop(item, "left")}
+                                ref={(el) => (leftRefs.current[item.id] = el)}
+                            >
+                                <div className="bg-[#2563EB] rounded-lg p-4 cursor-move hover:bg-[#1D4ED8] transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-8 h-8 bg-white rounded text-[#2563EB] font-bold flex items-center justify-center">
+                                            {index + 1}
+                                        </span>
+                                        <input
+                                            type="text"
+                                            value={item.text}
+                                            onChange={(e) => handleItemChange(item.id, "left", e.target.value)}
+                                            placeholder={`Trái ${index + 1}`}
+                                            className="flex-1 bg-transparent text-white placeholder-white/70 outline-none"
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                        {leftItems.length > 1 && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeItem(item.id, "left");
+                                                }}
+                                                className="w-6 h-6 bg-white/20 rounded text-white hover:bg-white/30 transition-colors flex items-center justify-center"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
                         <button
-                            onClick={() => setSelectedLevel(Math.max(1, selectedLevel - 1))}
-                            className="w-8 h-8 bg-[#DC2626] rounded text-white font-bold hover:bg-[#B91C1C] transition-colors"
-                        >
-                            -
-                        </button>
-                        <span className="text-[#F5F5F5] font-bold text-xl min-w-[2rem] text-center">{selectedLevel}</span>
-                        <button
-                            onClick={() => setSelectedLevel(Math.min(5, selectedLevel + 1))}
-                            className="w-8 h-8 bg-[#2563EB] rounded text-white font-bold hover:bg-[#1D4ED8] transition-colors"
+                            onClick={() => addItem("left")}
+                            className="w-16 h-16 bg-[#84CC16] rounded-lg flex items-center justify-center text-white text-2xl hover:bg-[#65A30D] transition-colors"
                         >
                             +
                         </button>
-                        <span className="text-[#CCCCCC] ml-2">point</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <select
-                            value="matching"
-                            onChange={(e) => onTypeChange(e.target.value)}
-                            className="px-4 py-2 bg-[#F59E0B] rounded-lg text-black font-medium focus:outline-none"
-                        >
-                            {questionTypes.map((type) => (
-                                <option key={type.id} value={type.id}>
-                                    {type.name}
-                                </option>
-                            ))}
-                        </select>
-                        <span className="text-[#CCCCCC]">can change</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <span className="px-4 py-2 bg-[#9333EA] rounded-lg text-white font-medium">matching</span>
-                        <span className="px-4 py-2 bg-[#9333EA] rounded-lg text-white font-medium">multi choice</span>
-                    </div>
-                </div>
-
-                {/* Matching Interface */}
-                <div className="relative">
-                    <div className="grid grid-cols-2 gap-8 mb-6">
-                        {/* Left Column */}
-                        <div className="space-y-4">
-                            {leftItems.map((item, index) => (
-                                <div
-                                    key={item.id}
-                                    className="relative"
-                                    draggable
-                                    onDragStart={() => handleDragStart(item, "left")}
-                                    onDragOver={(e) => e.preventDefault()}
-                                    onDrop={() => handleDrop(item, "left")}
-                                >
-                                    <div className="bg-[#2563EB] rounded-lg p-4 cursor-move hover:bg-[#1D4ED8] transition-colors">
-                                        <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 bg-white rounded text-[#2563EB] font-bold flex items-center justify-center">
-                    {index + 1}
-                  </span>
-                                            <input
-                                                type="text"
-                                                value={item.text}
-                                                onChange={(e) => handleLeftItemChange(item.id, e.target.value)}
-                                                placeholder={`Left item ${index + 1}`}
-                                                className="flex-1 bg-transparent text-white placeholder-white/70 outline-none"
-                                                onClick={(e) => e.stopPropagation()}
-                                            />
-                                            {leftItems.length > 1 && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        removeLeftItem(item.id)
-                                                    }}
-                                                    className="w-6 h-6 bg-white/20 rounded text-white hover:bg-white/30 transition-colors flex items-center justify-center"
-                                                >
-                                                    ×
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-
-                            <button
-                                onClick={addLeftItem}
-                                className="w-16 h-16 bg-[#84CC16] rounded-lg flex items-center justify-center text-white text-2xl hover:bg-[#65A30D] transition-colors"
+                    {/* Right Column */}
+                    <div className="flex-1 min-w-[300px] space-y-4">
+                        {rightItems.map((item, index) => (
+                            <div
+                                key={item.id}
+                                className="relative"
+                                draggable
+                                onDragStart={() => handleDragStart(item, "right")}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={() => handleDrop(item, "right")}
+                                ref={(el) => (rightRefs.current[item.id] = el)}
                             >
-                                +
-                            </button>
-                        </div>
-
-                        {/* Right Column */}
-                        <div className="space-y-4">
-                            {rightItems.map((item, index) => (
                                 <div
-                                    key={item.id}
-                                    className="relative"
-                                    draggable
-                                    onDragStart={() => handleDragStart(item, "right")}
-                                    onDragOver={(e) => e.preventDefault()}
-                                    onDrop={() => handleDrop(item, "right")}
+                                    className={`rounded-lg p-4 cursor-move transition-colors ${
+                                        index % 2 === 0
+                                            ? "bg-[#2563EB] hover:bg-[#1D4ED8]"
+                                            : "bg-[#FF8C42] hover:bg-[#E07B39]"
+                                    }`}
                                 >
-                                    <div
-                                        className={`rounded-lg p-4 cursor-move transition-colors ${
-                                            index % 2 === 0 ? "bg-[#2563EB] hover:bg-[#1D4ED8]" : "bg-[#FF8C42] hover:bg-[#E07B39]"
-                                        }`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 bg-white rounded text-black font-bold flex items-center justify-center">
-                    {index + 1}
-                  </span>
-                                            <input
-                                                type="text"
-                                                value={item.text}
-                                                onChange={(e) => handleRightItemChange(item.id, e.target.value)}
-                                                placeholder={`Right item ${index + 1}`}
-                                                className="flex-1 bg-transparent text-white placeholder-white/70 outline-none"
-                                                onClick={(e) => e.stopPropagation()}
-                                            />
-                                            {rightItems.length > 1 && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        removeRightItem(item.id)
-                                                    }}
-                                                    className="w-6 h-6 bg-white/20 rounded text-white hover:bg-white/30 transition-colors flex items-center justify-center"
-                                                >
-                                                    ×
-                                                </button>
-                                            )}
-                                        </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-8 h-8 bg-white rounded text-black font-bold flex items-center justify-center">
+                                            {index + 1}
+                                        </span>
+                                        <input
+                                            type="text"
+                                            value={item.text}
+                                            onChange={(e) => handleItemChange(item.id, "right", e.target.value)}
+                                            placeholder={`Phải ${index + 1}`}
+                                            className="flex-1 bg-transparent text-white placeholder-white/70 outline-none"
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                        {rightItems.length > 1 && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeItem(item.id, "right");
+                                                }}
+                                                className="w-6 h-6 bg-white/20 rounded text-white hover:bg-white/30 transition-colors flex items-center justify-center"
+                                            >
+                                                ×
+                                            </button>
+                                        )}
                                     </div>
-                                </div>
-                            ))}
-
-                            <button
-                                onClick={addRightItem}
-                                className="w-16 h-16 bg-[#84CC16] rounded-lg flex items-center justify-center text-white text-2xl hover:bg-[#65A30D] transition-colors"
-                            >
-                                +
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Connection Lines */}
-                    <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
-                        {connections.map((connection, index) => {
-                            const leftIndex = leftItems.findIndex((item) => item.id === connection.leftId)
-                            const rightIndex = rightItems.findIndex((item) => item.id === connection.rightId)
-
-                            if (leftIndex === -1 || rightIndex === -1) return null
-
-                            const leftY = leftIndex * 80 + 40
-                            const rightY = rightIndex * 80 + 40
-
-                            return (
-                                <g key={index}>
-                                    <line
-                                        x1="45%"
-                                        y1={leftY}
-                                        x2="55%"
-                                        y2={rightY}
-                                        stroke="black"
-                                        strokeWidth="3"
-                                        className="cursor-pointer"
-                                        onClick={() => removeConnection(connection.leftId, connection.rightId)}
-                                    />
-                                </g>
-                            )
-                        })}
-                    </svg>
-                </div>
-
-                {/* Time Slider */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-center gap-4">
-                        <div className="flex-1 max-w-md">
-                            <div className="relative">
-                                {/* Custom Time Slider */}
-                                <div className="relative bg-[#2A2A2A] h-12 rounded-lg border-2 border-[#9333EA] overflow-hidden">
-                                    {/* Ruler marks */}
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        {Array.from({ length: 30 }, (_, i) => (
-                                            <div key={i} className="w-px bg-black h-8" style={{ marginRight: i < 29 ? "8px" : "0" }} />
-                                        ))}
-                                    </div>
-
-                                    {/* Slider input */}
-                                    <input
-                                        type="range"
-                                        min="10"
-                                        max="300"
-                                        step="5"
-                                        value={timeLimit}
-                                        onChange={(e) => setTimeLimit(Number.parseInt(e.target.value))}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    />
-
-                                    {/* Slider thumb indicator */}
-                                    <div
-                                        className="absolute top-1/2 transform -translate-y-1/2 w-4 h-8 bg-gradient-to-r from-[#2563EB] to-[#14B8A6] rounded pointer-events-none"
-                                        style={{
-                                            left: `${((timeLimit - 10) / (300 - 10)) * 100}%`,
-                                            transform: "translateX(-50%) translateY(-50%)",
-                                        }}
-                                    />
-                                </div>
-
-                                <div className="text-center mt-2">
-                                    <span className="text-[#F5F5F5] font-bold text-lg">{timeLimit}s</span>
                                 </div>
                             </div>
-                        </div>
+                        ))}
+
+                        <button
+                            onClick={() => addItem("right")}
+                            className="w-16 h-16 bg-[#84CC16] rounded-lg flex items-center justify-center text-white text-2xl hover:bg-[#65A30D] transition-colors"
+                        >
+                            +
+                        </button>
                     </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex justify-center gap-4">
-                    <button className="px-8 py-3 bg-gradient-to-r from-[#DC2626] to-[#B91C1C] rounded-lg text-white font-medium hover:shadow-lg transition-all">
-                        Xóa
-                    </button>
-                    <button className="px-8 py-3 bg-gradient-to-r from-[#9333EA] to-[#DB2777] rounded-lg text-white font-medium hover:shadow-lg hover:shadow-[rgba(219,39,119,0.3)] transition-all">
-                        Ẩn
-                    </button>
-                </div>
+                {/* Connection Lines */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                    {connections.map((conn, index) => {
+                        const leftEl = leftRefs.current[conn.leftId];
+                        const rightEl = rightRefs.current[conn.rightId];
+
+                        if (!leftEl || !rightEl) return null;
+
+                        const leftRect = leftEl.getBoundingClientRect();
+                        const rightRect = rightEl.getBoundingClientRect();
+
+                        const containerRect = leftEl.offsetParent.getBoundingClientRect();
+
+                        const x1 = leftRect.right - containerRect.left;
+                        const y1 = leftRect.top + leftRect.height / 2 - containerRect.top;
+
+                        const x2 = rightRect.left - containerRect.left;
+                        const y2 = rightRect.top + rightRect.height / 2 - containerRect.top;
+
+                        return (
+                            <line
+                                key={index}
+                                x1={x1}
+                                y1={y1}
+                                x2={x2}
+                                y2={y2}
+                                stroke="#FF8C42"
+                                strokeWidth="3"
+                                className="cursor-pointer"
+                                onClick={() => removeConnection(conn.leftId, conn.rightId)}
+                            />
+                        );
+                    })}
+                </svg>
             </div>
         </div>
-    )
+    );
 }

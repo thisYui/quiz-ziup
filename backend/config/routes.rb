@@ -73,7 +73,7 @@ Rails.application.routes.draw do
 
   namespace :account do
     # Getting actions
-    post ":user_id/information",               to: "getting#get_information"
+    post ":user_id/information",               to: "getting#information"
     post ":user_id/owner_quiz",                to: "getting#owner_quiz"
     get ":user_id/quiz_outstanding",           to: "getting#quiz_outstanding"
     post ":user_id/history",                   to: "getting#history"

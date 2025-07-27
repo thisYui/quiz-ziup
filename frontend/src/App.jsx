@@ -6,13 +6,13 @@ import AccountRoutes from "./routes/AccountRoutes.jsx";
 import ViewRoutes from "./routes/ViewRoutes.jsx";
 
 
-import MainQuizPage from "./pages/quiz/MainQuizPage.jsx";
+import SettingPage from "./pages/account/SettingPage.jsx";
 
 function App() {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<MainQuizPage />} />
+                <Route path="/" element={<SettingPage />} />
                 <Route path="/auth/*" element={<AuthRoutes />} />
                 <Route path="/account/*" element={<AccountRoutes />} />
                 <Route path="/quiz/*" element={<QuizRoutes />} />

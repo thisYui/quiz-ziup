@@ -22,20 +22,20 @@ class AddConstraintsToQuizSchema < ActiveRecord::Migration[7.1]
     change_column_null :questions, :content, false
     change_column_null :questions, :question_type, false
     change_column_null :questions, :position, false
-    add_check_constraint :questions, "position > 0", name: "index_greater_than_zero"
+    add_check_constraint :questions, "position >= 0", name: "index_greater_than_zero"
 
     # Choice Options
     change_column_null :choice_options, :question_id, false
     change_column_null :choice_options, :content, false
     change_column_null :choice_options, :is_correct, false
     change_column_null :choice_options, :position, false
-    add_check_constraint :choice_options, "position > 0", name: "index_greater_than_zero"
+    add_check_constraint :choice_options, "position >= 0", name: "index_greater_than_zero"
 
     # Matching Options
     change_column_null :matching_options, :question_id, false
     change_column_null :matching_options, :content, false
     change_column_null :matching_options, :side, false
-    add_check_constraint :matching_options, "position > 0", name: "index_greater_than_zero"
+    add_check_constraint :matching_options, "position >= 0", name: "index_greater_than_zero"
 
     # Matching Answers (2 bên đều là option)
     change_column_null :matching_results, :option_left_id, false

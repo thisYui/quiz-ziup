@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import ChoiceQuestion from "./ChoiceQuestion.jsx";
 import MatchingQuestion from "./MatchingQuestion.jsx";
 import FillInQuestion from "./FillInQuestion.jsx";
@@ -6,19 +6,19 @@ import { QUESTION_TYPE_NUMBER } from "../../../constants/index.js";
 import { useQuizStore } from "../../../hooks/useQuiz.js";
 import { FooterQuestion, HeaderQuestion } from "./index.js";
 
-export default function SectionRenderer({ type, data, onTypeChange }) {
+export default function SectionRenderer({ type, data }) {
     const neverStarted = useQuizStore(state => state.neverStarted);
+    const [questionType, setQuestionType] = useState(type);
 
     const commonProps = {
-        questionType: type,
+        questionType,
         options: data.options || [],
         results: data.results || [],
     };
 
-    // chọn component render dựa theo type
     let QuestionComponent = null;
 
-    switch (type) {
+    switch (questionType) {
         case QUESTION_TYPE_NUMBER.SINGLE_CHOICE:
         case QUESTION_TYPE_NUMBER.MULTIPLE_CHOICE:
             QuestionComponent = <ChoiceQuestion {...commonProps} />;
@@ -33,20 +33,14 @@ export default function SectionRenderer({ type, data, onTypeChange }) {
             QuestionComponent = <div className="text-red-500">Loại câu hỏi không hợp lệ</div>;
     }
 
-    // layout bọc ngoài
     return (
         <div className="flex justify-center p-6">
             <div className="max-w-4xl mx-auto">
-                {/* Top Controls */}
                 <HeaderQuestion
-                    questionType={type}
-                    onTypeChange={onTypeChange}
+                    questionType={questionType}
+                    onTypeChange={setQuestionType}
                 />
-
-                {/* Render câu hỏi */}
                 {QuestionComponent}
-
-                {/* Footer */}
                 <FooterQuestion
                     hideQuestion={data.hideQuestion}
                     neverStarted={neverStarted}

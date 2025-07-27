@@ -1,32 +1,20 @@
 import { useState } from "react";
 import { Button } from "../../ui/button.jsx";
+import InfiniteTimeRuler from "./InfiniteTimeRuler.jsx";
 
-export default function FooterQuestion({neverStarted, hideQuestion, onHideQuestion}) {
-    const [timeLimit, setTimeLimit] = useState(30)
-  return (
-      <div className="flex flex-col items-center gap-4 mx-auto">
-      {/* Time Slider */}
-          <div className="mb-8">
-                <div className="flex items-center justify-center gap-4">
-                    <div className="flex-1 max-w-md">
-                        <div className="relative">
-                            <input
-                                type="range"
-                                min="10"
-                                max="300"
-                                step="5"
-                                value={timeLimit}
-                                onChange={(e) => setTimeLimit(Number.parseInt(e.target.value))}
-                                className="w-full h-2 bg-[#2A2A2A] rounded-lg appearance-none cursor-pointer slider"
-                            />
-                            <div className="flex justify-between text-[#888888] text-sm mt-2">
-                                <span>10s</span>
-                                <span className="text-[#F5F5F5] font-bold">{timeLimit}s</span>
-                                <span>300s</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+export default function FooterQuestion({ neverStarted, hideQuestion }) {
+    const [timeLimit, setTimeLimit] = useState(30);
+
+    return (
+        <div className="flex flex-col items-center gap-4 mx-auto">
+            {/* Timeline Slider */}
+            <div className="w-full max-w-2xl mb-6">
+                <InfiniteTimeRuler
+                    value={timeLimit}
+                    onChange={(val) => setTimeLimit(val)}
+                    min={1}
+                />
+                <p className="text-white text-center font-semibold mt-2">{timeLimit}s</p>
             </div>
 
           {/* Action Buttons */}

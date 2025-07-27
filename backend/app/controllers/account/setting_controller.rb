@@ -30,7 +30,7 @@ class Account::SettingController < ApplicationController
     user = User.find_by(id: params[:user_id])
     return unless is_true(user) and user
 
-    new_email = params[:email]
+    new_email = params[:new_email]
 
     # Kiểm tra email đã tồn tại chưa
     if User.exists?(email: new_email)
@@ -48,7 +48,7 @@ class Account::SettingController < ApplicationController
     user = User.find_by(id: params[:user_id])
     return unless is_true(user) and user
 
-    new_password = params[:password]
+    new_password = params[:new_password]
     user.password = new_password
 
     return unless is_true(user.save)

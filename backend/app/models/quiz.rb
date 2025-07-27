@@ -2,24 +2,24 @@ class Quiz < ApplicationRecord
   belongs_to :owner_user, class_name: 'User', dependent: :destroy
   has_many :quiz_sessions, dependent: :destroy
   has_many :questions, dependent: :destroy
-  enum topic: {
-    math: 0,
-    physics: 1,
-    chemistry: 2,
-    biology: 3,
-    literature: 4,
-    history: 5,
-    geography: 6,
-    music: 7,
-    art: 8,
-    technology: 9,
-    health: 10,
-    society: 11,
-    other: 12
-  }
+  # enum topic: {
+  #   math: 0,
+  #   physics: 1,
+  #   chemistry: 2,
+  #   biology: 3,
+  #   literature: 4,
+  #   history: 5,
+  #   geography: 6,
+  #   music: 7,
+  #   art: 8,
+  #   technology: 9,
+  #   health: 10,
+  #   society: 11,
+  #   other: 12
+  # }
 
   extend FriendlyId
-  friendly_id :title, use: [:slugged, :history] # lưu lịch sử slug cũ để redirect nếu cần
+  friendly_id :title, use: [:slugged, :history]
 
   validates :title, presence: true
   validates :slug, uniqueness: true

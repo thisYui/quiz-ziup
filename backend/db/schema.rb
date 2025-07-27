@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_07_21_143649) do
+ActiveRecord::Schema[7.1].define(version: 2025_07_27_100450) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -18,9 +18,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_21_143649) do
     t.bigint "participations_id", null: false
     t.bigint "question_id", null: false
     t.integer "magic_points", default: 0
+    t.integer "answerable_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "answerable_type", null: false
     t.index ["participations_id"], name: "index_answers_on_participations_id"
     t.index ["question_id"], name: "index_answers_on_question_id"
   end
@@ -44,7 +44,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_21_143649) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["question_id"], name: "index_choice_options_on_question_id"
-    t.check_constraint "\"position\" > 0", name: "index_greater_than_zero"
+    t.check_constraint "\"position\" >= 0", name: "index_greater_than_zero"
   end
 
   create_table "clients", force: :cascade do |t|
@@ -70,6 +70,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_21_143649) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["question_id"], name: "index_fill_results_on_question_id"
+  end
+
+  create_table "friendly_id_slugs", force: :cascade do |t|
+    t.string "slug", null: false
+    t.integer "sluggable_id", null: false
+    t.string "sluggable_type", limit: 50
+    t.string "scope"
+    t.datetime "created_at"
+    t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
+    t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
+    t.index ["sluggable_type", "sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_type_and_sluggable_id"
   end
 
   create_table "jwt_tokens", force: :cascade do |t|
@@ -106,15 +117,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_21_143649) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["question_id"], name: "index_matching_options_on_question_id"
-    t.check_constraint "\"position\" > 0", name: "index_greater_than_zero"
+    t.check_constraint "\"position\" >= 0", name: "index_greater_than_zero"
   end
 
   create_table "matching_results", force: :cascade do |t|
+    t.bigint "question_id", null: false
     t.bigint "option_left_id", null: false
     t.bigint "option_right_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "question_id", null: false
     t.index ["option_left_id"], name: "index_matching_results_on_option_left_id"
     t.index ["option_right_id"], name: "index_matching_results_on_option_right_id"
     t.index ["question_id"], name: "index_matching_results_on_question_id"
@@ -138,11 +149,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_21_143649) do
     t.integer "score", default: 1
     t.integer "level"
     t.integer "position", null: false
+    t.boolean "hide", default: false
     t.integer "time", default: 30
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["quiz_id"], name: "index_questions_on_quiz_id"
-    t.check_constraint "\"position\" > 0", name: "index_greater_than_zero"
+    t.check_constraint "\"position\" >= 0", name: "index_greater_than_zero"
   end
 
   create_table "quiz_sessions", force: :cascade do |t|
@@ -199,7 +211,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_07_21_143649) do
   add_foreign_key "matching_options", "questions", on_delete: :cascade
   add_foreign_key "matching_results", "matching_options", column: "option_left_id", on_delete: :cascade
   add_foreign_key "matching_results", "matching_options", column: "option_right_id", on_delete: :cascade
-  add_foreign_key "matching_results", "questions"
+  add_foreign_key "matching_results", "questions", on_delete: :cascade
   add_foreign_key "participations", "quiz_sessions", on_delete: :cascade
   add_foreign_key "questions", "quizzes"
   add_foreign_key "quiz_sessions", "quizzes", on_delete: :cascade

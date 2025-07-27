@@ -26,19 +26,11 @@ export default function MainQuizPage() {
                 ...prev,
                 {
                     id: newId,
-                    type: data.type,
+                    type: data.question_type,
                     data: data,
                 },
             ];
         });
-    }
-
-    function handleTypeChange(index, newType) {
-        setSections(prev =>
-            prev.map((s, i) =>
-                i === index ? { ...s, type: newType } : s
-            )
-        );
     }
 
     function handleStartQuiz() {
@@ -67,7 +59,6 @@ export default function MainQuizPage() {
                                 <SectionRenderer
                                     type={section.type}
                                     data={section.data}
-                                    onTypeChange={(newType) => handleTypeChange(index, newType)}
                                 />
                             </div>
                         ))}

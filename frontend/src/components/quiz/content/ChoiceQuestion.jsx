@@ -1,135 +1,139 @@
-import { useState, useEffect } from "react"
-import { Button } from "../../ui/button.jsx";
+import { useState, useEffect, useRef } from "react";
 import { CHOICE_FORM } from "../../../constants/index.js";
+import AnswerForm from "./AnswerForm.jsx";
 
-export default function ChoiceQuestion({ questionType = "single-choice", options }) {
-    const [text, setText] = useState("");
+export default function ChoiceQuestion({ questionType = "single-choice", options = [] }) {
     const [position, setPosition] = useState(0);
+    const [localOptions, setLocalOptions] = useState([]);
+    const optionRefs = useRef({});
 
     useEffect(() => {
+        options.forEach((opt) => {
+            if (optionRefs.current[opt.id]) {
+                optionRefs.current[opt.id].textContent = opt.text || "";
+            }
+        });
+        setLocalOptions(options);
+        const max = Math.max(...options.map(o => o.position ?? 0), 0);
+        setPosition(max + 1);
+    }, [options]);
 
-    }, [questionType])
+    const setOptionRef = (id) => (el) => {
+        optionRefs.current[id] = el;
+    };
 
+    const handleOptionCorrectChange = (optionId) => {
+        // Cập nhật lại tất cả text từ DOM vào state trước
+        const updatedOptions = localOptions.map((option) => {
+            const el = optionRefs.current[option.id];
+            const text = el?.textContent || "";
+            return {
+                ...option,
+                text,
+                isCorrect:
+                    questionType === "single-choice"
+                        ? option.id === optionId
+                        : option.id === optionId
+                            ? !option.isCorrect
+                            : option.isCorrect,
+            };
+        });
 
-    const handleAnswerCorrectChange = (answerId) => {
-        if (questionType === "single-choice") {
-            // Single choice: only one can be correct
-            setOptions(
-                options.map((answer) => ({
-                    ...answer,
-                    isCorrect: answer.id === answerId,
-                })),
+        setLocalOptions(updatedOptions);
+    };
+
+    const handleOptionTextChange = (optionId) => {
+        const el = optionRefs.current[optionId];
+        const text = el?.textContent || "";
+        setLocalOptions(prev =>
+            prev.map(opt =>
+                opt.id === optionId ? { ...opt, text } : opt
             )
-        } else if (questionType === "multi-choice") {
-            // Multi choice: multiple can be correct
-            setOptions(
-                options.map((answer) => (answer.id === answerId ? { ...answer, isCorrect: !answer.isCorrect } : answer)),
-            )
+        );
+    };
+
+    const addOption = (template = CHOICE_FORM) => {
+        const newOption = {
+            ...template,
+            id: Date.now(),
+            position,
+            text: "",
+            isCorrect: false
+        };
+        setLocalOptions([...localOptions, newOption]);
+        setPosition(position + 1);
+    };
+
+    const removeOption = (optionId) => {
+        if (localOptions.length > 2) {
+            setLocalOptions(localOptions.filter((option) => option.id !== optionId));
         }
-    }
-
-    const handleAnswerTextChange = (answerId, text) => {
-        setOptions(options.map((answer) => (answer.id === answerId ? { ...answer, text } : answer)))
-    }
-
-    const addOption = (data) => {
-        if (data.position === null) {
-            data.position = position
-        }
-
-        setPosition(position + 1)
-    }
-
-    const removeAnswer = (answerId) => {
-        if (options.length > 2) {
-            setOptions(options.filter((answer) => answer.id !== answerId))
-        }
-    }
+    };
 
     return (
         <div>
-            {/* Question Input */}
-            <div className="mb-6 relative">
-                {/* khung nền + vùng nhập */}
-                <div
-                    contentEditable
-                    onInput={(e) => setText(e.currentTarget.textContent)}
-                    className="w-full min-h-[3rem] bg-gradient-to-r from-[#9333EA] to-[#DB2777] text-white text-lg p-4 rounded-lg outline-none whitespace-pre-wrap"
-                ></div>
+            {/* Câu hỏi */}
+            <AnswerForm />
 
-                {/* placeholder ảo căn giữa */}
-                {text.trim() === "" && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-white/70 text-lg p-4">
-                        Nhập câu hỏi của bạn ở đây...
-                    </div>
-                )}
-            </div>
-
-            {/* Answer Options */}
+            {/* Các lựa chọn */}
             <div className="space-y-4 mb-6">
-                {options.map((answer, index) => (
-                    <div key={answer.id} className="flex items-center gap-4">
-                        <div className="flex-1 relative">
-                            <input
-                                type="text"
-                                value={answer.text}
-                                onChange={(e) => handleAnswerTextChange(answer.id, e.target.value)}
-                                placeholder={`Answer ${index + 1}`}
-                                className="w-full p-4 bg-[#FF8C42] rounded-lg text-white placeholder-white/70 outline-none"
-                            />
+                {localOptions.map((option) => (
+                    <div key={option.id} className="relative flex flex-col sm:flex-row gap-4 bg-[#FF8C42]/10 rounded-lg p-4">
+                        {/* Tick */}
+                        <button
+                            onClick={() => handleOptionCorrectChange(option.id)}
+                            className={`w-6 h-6 rounded-full border-2 flex items-center hover:bg-blue-600 justify-center transition-colors ${
+                                option.isCorrect ? "bg-blue-600 border-white" : "bg-white border-white/50"
+                            }`}
+                        >
+                            {option.isCorrect && (
+                                <svg className="w-4 h-4 text-[#FF8C42]" fill="currentColor" viewBox="0 0 20 20">
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                            )}
+                        </button>
 
-                            {/* Correct Answer Indicator */}
-                            <Button
-                                onClick={() => handleAnswerCorrectChange(answer.id)}
-                                className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded border-2 flex items-center justify-center ${
-                                    answer.isCorrect ? "bg-white border-white" : "bg-transparent border-white/50"
-                                }`}
-                            >
-                                {answer.isCorrect && (
-                                    <svg className="w-4 h-4 text-[#FF8C42]" fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clipRule="evenodd"
-                                        />
-                                    </svg>
-                                )}
-                            </Button>
+                        {/* Nội dung và xoá */}
+                        <div className="flex-1 relative w-[98%] min-h-[3rem]">
+                            <div
+                                ref={setOptionRef(option.id)}
+                                contentEditable
+                                suppressContentEditableWarning
+                                onInput={() => handleOptionTextChange(option.id)}
+                                className="w-full bg-[#FF8C42] text-white rounded-lg p-4 outline-none whitespace-pre-wrap break-all min-h-[3rem]"
+                            ></div>
 
-                            {/* Remove Answer Button */}
-                            {options.length > 2 && (
-                                <button
-                                    onClick={() => removeAnswer(answer.id)}
-                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white/20 rounded text-white hover:bg-white/30 transition-colors flex items-center justify-center"
-                                >
-                                    ×
-                                </button>
+                            {(!option.text || option.text.trim() === "") && (
+                                <div className="absolute inset-0 pointer-events-none p-4 text-white/60">
+                                    Nhập đáp án ở đây...
+                                </div>
                             )}
                         </div>
 
-                        {questionType === "single-choice" && (
+                        {localOptions.length > 2 && (
                             <button
-                                onClick={() => handleAnswerCorrectChange(answer.id)}
-                                className={`w-12 h-12 rounded-lg border-2 flex items-center justify-center transition-colors ${
-                                    answer.isCorrect
-                                        ? "bg-[#2563EB] border-[#2563EB] text-white"
-                                        : "border-[#666666] text-[#666666] hover:border-[#2563EB]"
-                                }`}
+                                onClick={() => removeOption(option.id)}
+                                className="absolute top-1 right-1 w-5 h-5 bg-white/20 rounded-full text-white hover:bg-red-600 transition-colors flex items-center justify-center text-lg font-bold"
+                                aria-label="Xoá lựa chọn"
                             >
-                                {answer.isCorrect ? "✓" : "×"}
+                                ×
                             </button>
                         )}
                     </div>
                 ))}
 
-                {/* Add Answer Button */}
+                {/* Nút thêm */}
                 <button
-                    onClick={() => {addOption(CHOICE_FORM)}}
+                    onClick={() => addOption(CHOICE_FORM)}
                     className="w-16 h-16 bg-[#84CC16] rounded-lg flex items-center justify-center text-white text-2xl hover:bg-[#65A30D] transition-colors"
                 >
                     +
                 </button>
             </div>
         </div>
-    )
+    );
 }
