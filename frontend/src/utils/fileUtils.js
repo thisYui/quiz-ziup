@@ -3,19 +3,19 @@ export async function encodeFileToBase64(file) {
         const reader = new FileReader();
 
         reader.onload = () => {
-            const result = reader.result; // dạng: "data:image/png;base64,iVBORw0KGgoAAA..."
+            const result = reader.result; // "data:image/png;base64,..."
             const [meta, base64Data] = result.split(',');
             const match = meta.match(/data:(.*);base64/);
-            const type = match ? match[1] : 'application/octet-stream';
+            const fullType = match ? match[1] : 'application/octet-stream';
+            const extension = fullType.split('/')[1];
 
             resolve({
-                data: base64Data, // 👈 phần bạn sẽ gửi lên Rails
-                type: type        // 👈 để backend biết loại file
+                data: base64Data,
+                type: extension
             });
         };
 
         reader.onerror = (err) => reject(err);
-
-        reader.readAsDataURL(file); //
+        reader.readAsDataURL(file);
     });
 }

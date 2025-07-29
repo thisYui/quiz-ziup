@@ -8,10 +8,7 @@ export const SETTING = {
 }
 
 export const SETTING_REVERSE = {
-    "Update avatar": "UPDATE_AVATAR",
-    "Update name": "UPDATE_NAME",
-    "Update email": "UPDATE_EMAIL",
-    "Update password": "UPDATE_PASSWORD",
-    "Delete account": "DELETE_ACCOUNT",
-    "Log out": "LOG_OUT",
+    "Update avatar": "avatar_url",
+    "Update name": "full_name",
+    "Update email": "email",
 }

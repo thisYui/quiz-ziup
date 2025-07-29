@@ -1,7 +1,7 @@
 import {QUESTION_FORM, TOPIC} from "../../../constants/index.js";
 import { Button } from "../../ui/button.jsx";
 import { useNavigate } from "react-router-dom";
-
+import { quizApi } from "../../../services/apiService.js";
 
 export default function SidebarQuiz({quizData, addQuestion, onCanStart}) {
     const navigate = useNavigate();
@@ -9,11 +9,16 @@ export default function SidebarQuiz({quizData, addQuestion, onCanStart}) {
     function handleFixQuizContent() {
         // Navigate to the quiz content fixing page
         const slug = sessionStorage.getItem("quiz_slug");
-        navigate(`/quiz/${slug}/edit`, { state: { quizData } });
+        navigate(`/quiz/${slug}/edit`);
     }
 
     function onAddQuestion() {
         addQuestion(QUESTION_FORM);
+        sessionStorage.setItem(
+            'position',
+            Number(sessionStorage.getItem('position') || 0) + 1
+        );
+
     }
 
     return (
@@ -46,7 +51,7 @@ export default function SidebarQuiz({quizData, addQuestion, onCanStart}) {
                     <div>
                         <label className="block text-[#CCCCCC] text-sm mb-2">Quiz Name</label>
                         <h2 className="text-[#F5F5F5] text-lg font-semibold">
-                            {quizData.name}
+                            {quizData.title}
                         </h2>
                     </div>
 
@@ -65,11 +70,15 @@ export default function SidebarQuiz({quizData, addQuestion, onCanStart}) {
                     </div>
 
                     <div>
-                        {quizData.isPublic && (
+                        {quizData.is_private ? (
+                            <div>
+                                <label className="block text-[#CCCCCC] text-sm mb-2">Private</label>
+                                <p className="text-[#888888]">
+                                    {quizData.key}
+                                </p>
+                            </div>
+                        ) : (
                             <label className="block text-[#CCCCCC] text-sm mb-2">Public</label>
-                        )}
-                        {!quizData.isPublic && (
-                            <label className="block text-[#CCCCCC] text-sm mb-2">Private</label>
                         )}
                     </div>
 

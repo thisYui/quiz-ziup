@@ -11,5 +11,8 @@
     "backend:start": "cd backend && rails server",
     "frontend:start": "cd frontend && npm run dev",
     "start": "concurrently \"npm run backend:start\" \"npm run frontend:start\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }

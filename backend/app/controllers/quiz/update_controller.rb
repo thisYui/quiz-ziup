@@ -1,5 +1,5 @@
 class Quiz::UpdateController < ApplicationController
-  def update_name
+  def update_title
     quiz = Quiz.friendly.find(params[:quiz_id])
     return unless is_true(quiz) and quiz
 
@@ -45,13 +45,14 @@ class Quiz::UpdateController < ApplicationController
     end
   end
 
-  def update_is_private
+  def update_key
     quiz = Quiz.friendly.find(params[:quiz_id])
     return unless is_true(quiz) and quiz
 
     # Ensure only the owner can update the quiz status
-    if params[:new_is_private].present?
-      quiz.is_private = params[:new_is_private]
+    if params[:new_key].present?
+      quiz.is_private = true
+      quiz.key = params[:new_key]
       return unless is_true(quiz.save)
       render json: { message: 'Quiz created successfully' }, status: :ok
     else
@@ -65,9 +66,28 @@ class Quiz::UpdateController < ApplicationController
 
     # Ensure only the owner can update the quiz topic
     if params[:new_topic].present?
-      quiz.topic = params[:new_topic]
+      quiz.topic = params[:new_topic].to_i
       return unless is_true(quiz.save)
       render json: { message: 'Quiz created successfully' }, status: :ok
+    else
+      render json: { error: I18n.t("quiz.update.failure") }, status: :unprocessable_entity
+    end
+  end
+
+  def update_max_participants
+    quiz = Quiz.friendly.find(params[:quiz_id])
+    return unless is_true(quiz) and quiz
+
+    # Ensure only the owner can update the quiz max participants
+    if params[:new_max_participants].present?
+      max_participants = params[:new_max_participants].to_i
+      if max_participants < 1
+        render json: { error: I18n.t("quiz.update.failure") }, status: :unprocessable_entity
+      else
+        quiz.max_participants = max_participants
+        return unless is_true(quiz.save)
+        render json: { message: 'Quiz created successfully' }, status: :ok
+      end
     else
       render json: { error: I18n.t("quiz.update.failure") }, status: :unprocessable_entity
     end

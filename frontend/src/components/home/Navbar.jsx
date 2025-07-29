@@ -6,21 +6,21 @@ export const Navbar = ({ name }) => {
     const navigate = useNavigate();
 
     const handleHistory = () => {
-      const userId = localStorage.getItem('user_id');
-        navigate(`${userId}/history`);
+      const userId = sessionStorage.getItem('user_id');
+        navigate(`/view/${userId}/history`);
     }
     const handleCreate = () => {
         navigate('/quiz/create');
     }
 
     const handleMyQuiz = () => {
-        const userId = localStorage.getItem('user_id');
-        navigate(`account/${userId}/owner`);
+        const userId = sessionStorage.getItem('user_id');
+        navigate(`/account/${userId}/owner`);
     }
 
     const handleSetting = () => {
-        const userId = localStorage.getItem('user_id');
-        navigate(`${userId}/information`);
+        const userId = sessionStorage.getItem('user_id');
+        navigate(`/account/${userId}/setting`);
     }
 
     return (
@@ -29,7 +29,7 @@ export const Navbar = ({ name }) => {
                 {/* trái: logo + tên */}
                 <div className="flex items-center gap-3">
                     <img
-                            src="./src/assets/favicon/favicon.png"
+                            src="/src/assets/favicon/favicon.png"
                             alt="Logo"
                             className="w-6 h-6"
                     />

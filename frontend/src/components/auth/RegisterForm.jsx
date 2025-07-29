@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import { Mail, User, Phone } from "lucide-react"
+import { Mail, User } from "lucide-react"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"

@@ -15,11 +15,13 @@ class User < ApplicationRecord
 
       quiz_info << {
         participator_id: participation.participator_id,
-        quiz_id: quiz.id,
-        quiz_session_id: quiz_session.id,
-        quiz_code: quiz.code,
-        quiz_title: quiz.title,
-        quiz_description: quiz.description,
+        id: quiz.id,
+        session_id: quiz_session.id,
+        slug: quiz.slug,
+        code: quiz.code,
+        title: quiz.title,
+        description: quiz.description,
+        topic: quiz.topic,
         score: participation.score,
         created_at: quiz_session.created_at
       }

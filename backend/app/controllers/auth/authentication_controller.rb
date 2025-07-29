@@ -2,7 +2,7 @@ class Auth::AuthenticationController < ApplicationController
   def login
     if params[:email].present? && params[:password].present?
       login_with_password
-    elsif params[:jti].present?
+    elsif params[:token].present?
       login_with_jwt
     else
       render json: { error: I18n.t('auth.login.invalid_params') }, status: :bad_request
@@ -10,7 +10,12 @@ class Auth::AuthenticationController < ApplicationController
   end
 
   def register
-    user = User.new(email: params[:email], password: params[:password])
+    user = User.new(
+      full_name: params[:full_name],
+      email: params[:email],
+      password: params[:password],
+      password_confirmation: params[:password_confirmation],
+    )
 
     return unless is_true(user.save)
 
@@ -34,7 +39,8 @@ class Auth::AuthenticationController < ApplicationController
   end
 
   def renew_token
-    new_jti = JwtToken.renew_token(params[:token])
+    ip_address = request.remote_ip
+    new_jti = JwtToken.renew_token(params[:token], ip_address)
     if new_jti
       render json: { token: new_jti }, status: :ok
     else
@@ -43,7 +49,12 @@ class Auth::AuthenticationController < ApplicationController
   end
 
   def logout
-    if JwtToken.delete_token(params[:token])
+    if params.blank?
+      return render json: { error: I18n.t('auth.logout.success') }, status: :bad_request
+    end
+
+    ip_address = request.remote_ip
+    if JwtToken.delete_token(params, ip_address)
       render json: { message: I18n.t('auth.logout.success') }, status: :ok
     else
       render json: { error: I18n.t('auth.logout.failure') }, status: :unprocessable_entity
@@ -71,9 +82,10 @@ class Auth::AuthenticationController < ApplicationController
   end
 
   def login_with_jwt
-    user_id = JwtToken.find_by_jti(params[:jti])
+    ip_address = request.remote_ip
+    user_id = JwtToken.find_by_jti(params[:token], ip_address)
     if user_id
-      render json: { user_id: user_id, token: params[:jti] }, status: :ok
+      render json: { user_id: user_id, token: params[:token][:jti] }, status: :ok
     else
       render json: { fail: I18n.t('auth.login.error_token') }, status: :unauthorized
     end

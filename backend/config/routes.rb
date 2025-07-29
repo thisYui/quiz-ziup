@@ -10,8 +10,8 @@ Rails.application.routes.draw do
     post "register",                          to: "authentication#register"
     post "send_otp",                          to: "authentication#send_otp"
     post "confirm_otp",                       to: "authentication#confirm_otp"
-    post ":token/renew_token",                to: "authentication#renew_token"
-    delete ":token/logout",                   to: "authentication#logout"
+    post "renew_token",                       to: "authentication#renew_token"
+    post "logout",                            to: "authentication#logout"
   end
 
   namespace :quiz do
@@ -53,16 +53,17 @@ Rails.application.routes.draw do
 
     # Create actions
     post "create",                             to: "create#create"
-    delete ":quiz_id/delete",                  to: "create#delete"
+    post ":quiz_id/delete",                    to: "create#delete"
     post ":quiz_id/add_question",              to: "create#add_question"
-    delete ":quiz_id/remove_question/:question_id",         to: "create#remove_question"
+    post ":quiz_id/remove_question/:question_id",         to: "create#remove_question"
 
     # Update actions
-    post ":quiz_id/update_name",               to: "update#update_name"
+    post ":quiz_id/update_title",              to: "update#update_title"
     post ":quiz_id/update_description",        to: "update#update_description"
     post ":quiz_id/update_code",               to: "update#update_code"
-    post ":quiz_id/update_is_private",         to: "update#update_is_private"
+    post ":quiz_id/update_key",                to: "update#update_key"
     post ":quiz_id/update_topic",              to: "update#update_topic"
+    post ":quiz_id/update_max_participants",   to: "update#update_max_participants"
 
     # View actions
     post ":quiz_id/show",                      to: "view#show"
@@ -84,6 +85,6 @@ Rails.application.routes.draw do
     post ":user_id/update_name",               to: "setting#update_name"
     post ":user_id/update_email",              to: "setting#update_email"
     post ":user_id/update_password",           to: "setting#update_password"
-    delete ":user_id/delete",                  to: "setting#delete"
+    post ":user_id/delete",                    to: "setting#delete"
   end
 end

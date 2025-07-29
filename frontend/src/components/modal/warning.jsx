@@ -17,8 +17,9 @@ export function WarningModal({ label, onClose }) {
                     console.error("Error logging out:", error);
                 });
         } else if (label === SETTING.LOG_OUT) {
-            authApi.logout(id)
+            authApi.logout()
                 .then(() => {
+                    console.log("Logged out successfully.");
                 })
                 .catch(error => {
                     console.error("Error logging out:", error);

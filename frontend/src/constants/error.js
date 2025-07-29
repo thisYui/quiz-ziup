@@ -29,4 +29,8 @@ export const ERROR = {
         code: 401,
         message: 'Bạn cần đăng nhập để thực hiện hành động này.',
     },
+    'authorization': {
+        code: 403,
+        message: 'Bạn không có quyền thực hiện hành động này.',
+    }
 }

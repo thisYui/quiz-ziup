@@ -16,7 +16,7 @@ class Account::GettingController < ApplicationController
   def owner_quiz
     quizzes = Quiz.where(owner_user_id: params[:user_id])
 
-    quizzes.map do |q|
+    data = quizzes.map do |q|
       {
         id: q.id,
         title: q.title,
@@ -27,9 +27,11 @@ class Account::GettingController < ApplicationController
         is_private: q.is_private,
         max_participants: q.max_participants,
         key: q.key,
-        never_started: not QuizSession.exists?(quiz_id: q.id)
+        never_started: !QuizSession.exists?(quiz_id: q.id)
       }
     end
+
+    render json: data, status: :ok
   end
 
   def quiz_outstanding

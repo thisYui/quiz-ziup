@@ -1,6 +1,8 @@
 require 'base64'
 
 class FileService
+  AVATAR_DEFAULT = 'default/avatar.png'
+
   def self.get_file_path(file_name)
     Rails.root.join('storage', file_name)
   end
@@ -21,6 +23,8 @@ class FileService
   end
 
   def self.delete_file(file_name)
+    return true if file_name == AVATAR_DEFAULT
+
     file_path = get_file_path(file_name)
     File.delete(file_path) if file_exists?(file_name)
   rescue Errno::ENOENT

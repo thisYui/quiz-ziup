@@ -18,7 +18,7 @@ export default function LoginForm({ formData, handleInputChange, setCurrentStep 
             const response = await authApi.login(formData.email, formData.password, rememberMe);
             if (response.user_id) {
                 sessionStorage.setItem("user_id", response.user_id);
-                navigate(`/${response.user_id}/home`);
+                navigate(`/account/${response.user_id}/home`);
             } else if (response.fail) {
                 setLoginError(true);
             }

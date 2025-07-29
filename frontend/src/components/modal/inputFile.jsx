@@ -18,7 +18,7 @@ export function FileInputModal({ info, setInfo, label, onClose }) {
         try {
             setUploading(true);
             const { data, type } = await encodeFileToBase64(selectedFile);
-            await accountApi.updateAvatar(userId, data, type);;
+            await accountApi.updateAvatar(userId, data, type);
             const previewUrl = URL.createObjectURL(selectedFile);
             setInfo((prev) => ({ ...prev, avatar_url: previewUrl }));
             onClose();
@@ -37,13 +37,20 @@ export function FileInputModal({ info, setInfo, label, onClose }) {
             <h2 className="text-xl font-semibold mb-4 capitalize">{label}</h2>
             <form className="space-y-4" onSubmit={handleUpload}>
                 <label className="block">
-                    <span className="text-sm text-gray-700">Choose new avatar:</span>
+                    <span className="text-sm text-gray-700 block mb-2">Choose new avatar:</span>
                     <input
+                        id="avatar-upload"
                         type="file"
                         accept="image/*"
-                        className="w-full mt-1"
+                        className="hidden"
                         onChange={(e) => setSelectedFile(e.target.files[0])}
                     />
+                    <label
+                        htmlFor="avatar-upload"
+                        className="inline-block cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md text-sm"
+                    >
+                        {selectedFile ? selectedFile.name : "Select File"}
+                    </label>
                 </label>
                 <button
                     type="submit"

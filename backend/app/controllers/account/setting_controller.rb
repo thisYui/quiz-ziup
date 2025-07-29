@@ -4,7 +4,7 @@ class Account::SettingController < ApplicationController
     return unless is_true(user) and user
 
     # Mặc định url là (user.id).type
-    name = "#{user.id}/avatar/#{params[:type]}"
+    name = "#{user.id}/avatar.#{params[:type]}"
     data = params[:data]
 
     # Lưu data vào storage

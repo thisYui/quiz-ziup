@@ -4,9 +4,7 @@ import { Navbar } from "../../components/home/Navbar.jsx";
 import { useNavigate } from "react-router-dom";
 import { useQuizStore } from "../../hooks/useQuiz.js";
 import { quizApi } from "../../services/apiService.js";
-import { QuizBasicInfoComponent, QuizPrivacySettingsComponent,
-    QuizParticipantSettingsComponent, QuizTopicSelectorComponent,
-    QuizFormActionsComponent } from "../../components/quiz/form/index.js";
+import { QuizForm } from "../../components/quiz/form/QuizForm";
 
 export default function CreateQuizPage() {
     const [title, setTitle] = useState('');
@@ -18,6 +16,7 @@ export default function CreateQuizPage() {
     const [isPrivate, setIsPrivate] = useState(false);
     const [privateKey, setPrivateKey] = useState('');
     const [topic, setTopic] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const navigator = useNavigate();
     const { setQuizData, setNeverStarted } = useQuizStore();
 
@@ -25,14 +24,16 @@ export default function CreateQuizPage() {
         e.preventDefault();
         setCodeExists(false);
         setCodeError('');
+        setIsSubmitting(true);
 
         if (code.length < 8) {
             setCodeError('Mã quiz phải có ít nhất 8 ký tự.');
+            setIsSubmitting(false);
             return;
         }
 
         const data = {
-            user_id: sessionStorage.getItem('user_id'),
+            owner_user_id: sessionStorage.getItem('user_id'),
             code: code,
             description: description,
             title: title,
@@ -42,27 +43,34 @@ export default function CreateQuizPage() {
             key: isPrivate ? privateKey : null
         };
 
-        const response = await quizApi.create(data);
-        if (response.error) {
-            setCodeExists(true);
-            return;
+        try {
+            const response = await quizApi.create(data);
+            if (response.error) {
+                setCodeExists(true);
+                setIsSubmitting(false);
+                return;
+            }
+
+            const { quiz_id, quiz_slug } = response;
+            sessionStorage.setItem('quiz_id', quiz_id);
+            sessionStorage.setItem('quiz_slug', quiz_slug);
+
+            data.quiz_id = quiz_id;
+            data.quiz_slug = quiz_slug;
+
+            setQuizData(data);
+            setNeverStarted(true);
+
+            navigator(`/quiz/${quiz_slug}/content`);
+        } catch (error) {
+            console.error('Error creating quiz:', error);
+        } finally {
+            setIsSubmitting(false);
         }
-
-        const { quiz_id, quiz_slug } = response;
-        sessionStorage.setItem('quiz_id', quiz_id);
-        sessionStorage.setItem('quiz_slug', quiz_slug);
-
-        data.quiz_id = quiz_id;
-        data.quiz_slug = quiz_slug;
-
-        setQuizData(data);
-        setNeverStarted(true);
-
-        navigator(`/quiz/${quiz_slug}/edit`);
     };
 
     const handleCancel = () => {
-        navigator(`/user/${sessionStorage.getItem('user_id')}`);
+        navigator(`/user/${sessionStorage.getItem('user_id')}/home`);
     };
 
     return (
@@ -70,10 +78,10 @@ export default function CreateQuizPage() {
             <BGPattern variant="dots" mask="fade-edges" fill="#444444" size={32} />
             <Navbar />
 
-            <form onSubmit={handleSubmit} className="pt-28 px-6 max-w-2xl mx-auto space-y-4">
+            <div className="pt-28 px-6 max-w-2xl mx-auto">
                 <h1 className="text-xl font-semibold mb-4">Tạo quiz</h1>
 
-                <QuizBasicInfoComponent 
+                <QuizForm
                     title={title}
                     setTitle={setTitle}
                     description={description}
@@ -81,32 +89,23 @@ export default function CreateQuizPage() {
                     code={code}
                     setCode={setCode}
                     codeExists={codeExists}
-                    codeError={codeError}
                     setCodeExists={setCodeExists}
+                    codeError={codeError}
                     setCodeError={setCodeError}
-                />
-
-                <QuizPrivacySettingsComponent 
+                    maxParticipants={maxParticipants}
+                    setMaxParticipants={setMaxParticipants}
                     isPrivate={isPrivate}
                     setIsPrivate={setIsPrivate}
                     privateKey={privateKey}
                     setPrivateKey={setPrivateKey}
-                />
-
-                <QuizParticipantSettingsComponent 
-                    maxParticipants={maxParticipants}
-                    setMaxParticipants={setMaxParticipants}
-                />
-
-                <QuizTopicSelectorComponent 
                     topic={topic}
                     setTopic={setTopic}
-                />
-
-                <QuizFormActionsComponent 
+                    onSubmit={handleSubmit}
                     onCancel={handleCancel}
+                    submitButtonText="Tạo"
+                    isSubmitting={isSubmitting}
                 />
-            </form>
+            </div>
         </div>
     );
 }

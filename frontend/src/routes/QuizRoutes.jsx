@@ -17,7 +17,7 @@ export default function QuizRoutes() {
             <Route path=":quiz_id/final" element={<FinalPage />} />
 
 
-            <Route path=":quiz_id/create" element={<CreateQuizPage />} />
+            <Route path="create" element={<CreateQuizPage />} />
             <Route path=":quiz_id/edit" element={<EditQuizPage />} />
             <Route path=":quiz_id/content" element={<MainQuizPage />} />
         </Routes>

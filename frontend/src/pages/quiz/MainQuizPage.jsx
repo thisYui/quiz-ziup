@@ -3,34 +3,43 @@ import { SidebarQuiz } from "../../components/quiz/content";
 import { Navbar } from "../../components/home/Navbar.jsx";
 import { EmptyQuestion, SectionRenderer } from "../../components/quiz/content";
 import { useQuizStore } from "../../hooks/useQuiz.js";
+import { quizApi } from "../../services/apiService.js";
 
 export default function MainQuizPage() {
     const [hasQuestions, setHasQuestions] = useState(false);
     const [sections, setSections] = useState([]);
     const quizData = useQuizStore(state => state.quizData);
     const questionData = useQuizStore(state => state.questionData);
+    sessionStorage.setItem('position', 0);
 
     useEffect(() => {
         if (!questionData || questionData.length === 0) return;
 
-        questionData.forEach(question => {
-            handleAddQuestion(question);
-        });
-    }, []);
-
-    function handleAddQuestion(data) {
         setHasQuestions(true);
-        setSections(prev => {
-            const newId = prev.length;
-            return [
-                ...prev,
-                {
-                    id: newId,
-                    type: data.question_type,
-                    data: data,
-                },
-            ];
-        });
+        const formatted = questionData.map((q) => ({
+            id: q.id,
+            type: q.question_type,
+            data: q,
+        }));
+        setSections(formatted);
+    }, [questionData]); // nên đưa questionData vào deps
+
+    function addSection(questionId, data) {
+        setSections(prev => [
+            ...prev,
+            {
+                id: questionId,
+                type: data.question_type,
+                data,
+            },
+        ]);
+    }
+
+    async function handleAddQuestion(data) {
+        const response = await quizApi.add_question(quizData.id, data);
+        const questionId = response.question_id;
+        setHasQuestions(true);
+        addSection(questionId, data);
     }
 
     function handleStartQuiz() {

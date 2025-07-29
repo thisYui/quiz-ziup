@@ -23,29 +23,46 @@ const setAuthToken = (token) => {
 // Auth API methods
 export const authApi = {
     login: async (email, password, rememberMe = false) => {
-        const deviceInfo = {
-            device: navigator.platform,
-            user_agent: navigator.userAgent,
-        };
+        let body;
 
-        const response = await apiClient.post('/auth/login', {
-            email,
-            password,
-            remember_me: rememberMe,
-            jwt_token: deviceInfo,
-        });
+        if (localStorage.getItem('token') !== null) {
+            body = {
+                token: {
+                    jti: localStorage.getItem('token'),
+                    device: navigator.platform,
+                    user_agent: navigator.userAgent,
+                }
+            };
+        } else if (email && password) {
+            body = {
+                email,
+                password,
+                remember_me: rememberMe,
+                jwt_token: {
+                    device: navigator.platform,
+                    user_agent: navigator.userAgent,
+                }
+            };
+        } else {
+            return { error: 'No token or credentials provided' };
+        }
+
+        const response = await apiClient.post('/auth/login', body);
 
         if (response.data.token) {
             setAuthToken(response.data.token);
             localStorage.setItem('token', response.data.token);
         }
+
         return response.data;
     },
 
-    register: async (email, password) => {
+    register: async (full_name, email, password, confirm_password) => {
       const response = await apiClient.post('/auth/register', {
+          full_name,
           email,
           password,
+          confirm_password
       });
       return response.data;
     },
@@ -60,19 +77,26 @@ export const authApi = {
         return response.data;
     },
 
-    logout: async (userID) => {
-      const response = await apiClient.delete(`/auth/${userID}/logout`, {
-          token: {
-            jti: localStorage.getItem('token') || null,
+    logout: async () => {
+        if (localStorage.getItem('token') === null) {
+            return true;
+        }
+
+        const token = {
+            jti: localStorage.getItem('token'),
             device: navigator.platform,
             user_agent: navigator.userAgent,
-          },
-      });
-      setAuthToken(null);
-      sessionStorage.clear();
-      localStorage.removeItem('token');
-      return response.data;
-    },
+            user_id: sessionStorage.getItem('user_id'),
+        };
+
+        const response = await apiClient.post(`/auth/logout`, token );
+
+        setAuthToken(null);
+        sessionStorage.clear();
+        localStorage.removeItem('token');
+
+        return response.data;
+    }
 };
 
 // Quiz API methods - placeholder for future implementation
@@ -96,7 +120,31 @@ export const quizApi = {
     add_question: async (quiz_id, question_data) => {
         const response = await apiClient.post(`/quiz/${quiz_id}/add_question`, question_data);
         return response.data;
-    }
+    },
+    update_title: async (quiz_id, new_title) => {
+        const response = await apiClient.post(`/quiz/${quiz_id}/update_title`, { new_title: new_title });
+        return response.data;
+    },
+    update_description: async (quiz_id, new_description) => {
+        const response = await apiClient.post(`/quiz/${quiz_id}/update_description`, { new_description: new_description });
+        return response.data;
+    },
+    update_code: async (quiz_id, new_code) => {
+        const response = await apiClient.post(`/quiz/${quiz_id}/update_code`, { new_code: new_code });
+        return response.data;
+    },
+    update_max_participants: async (quiz_id, new_max_participants) => {
+        const response = await apiClient.post(`/quiz/${quiz_id}/update_max_participants`, { new_max_participants: new_max_participants });
+        return response.data;
+    },
+    update_key: async (quiz_id, new_key) => {
+        const response = await apiClient.post(`/quiz/${quiz_id}/update_key`, { new_key: new_key });
+        return response.data;
+    },
+    update_topic: async (quiz_id, new_topic) => {
+        const response = await apiClient.post(`/quiz/${quiz_id}/update_topic`, { new_topic: new_topic });
+        return response.data;
+    },
 };
 
 // Account API methods - placeholder for future implementation
@@ -107,6 +155,10 @@ export const accountApi = {
     },
     getOwnerQuiz: async (userId) => {
         const response = await apiClient.post(`/account/${userId}/owner_quiz`);
+        return response.data;
+    },
+    getHistoryQuiz: async (userId) => {
+        const response = await apiClient.post(`/account/${userId}/history`);
         return response.data;
     },
     updateName: async (userId, new_name) => {
