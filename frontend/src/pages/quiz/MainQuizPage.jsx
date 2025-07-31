@@ -16,30 +16,45 @@ export default function MainQuizPage() {
         if (!questionData || questionData.length === 0) return;
 
         setHasQuestions(true);
-        const formatted = questionData.map((q) => ({
-            id: q.id,
-            type: q.question_type,
-            data: q,
+        const formatted = questionData.map((e) => ({
+            id: e.question.id,
+            type: e.question.question_type,
+            data: e,
         }));
         setSections(formatted);
-    }, [questionData]); // nên đưa questionData vào deps
+    }, [questionData]);
 
     function addSection(questionId, data) {
+        data.question.id = questionId;
         setSections(prev => [
             ...prev,
             {
                 id: questionId,
-                type: data.question_type,
+                type: data.question.question_type,
                 data,
             },
         ]);
     }
 
     async function handleAddQuestion(data) {
-        const response = await quizApi.add_question(quizData.id, data);
+        const questionData = data.question;
+        const response = await quizApi.add_question(quizData.id, questionData);
         const questionId = response.question_id;
         setHasQuestions(true);
         addSection(questionId, data);
+    }
+
+    async function handleDeleteQuestion(questionId) {
+        const response = await quizApi.remove_question(quizData.id, questionId);
+        if (!response.error) {
+            setSections(prev => {
+                const updated = prev.filter(section => section.id !== questionId);
+                if (updated.length === 0) {
+                    setHasQuestions(false);
+                }
+                return updated;
+            });
+        }
     }
 
     function handleStartQuiz() {
@@ -68,6 +83,7 @@ export default function MainQuizPage() {
                                 <SectionRenderer
                                     type={section.type}
                                     data={section.data}
+                                    deleteQuestion={handleDeleteQuestion}
                                 />
                             </div>
                         ))}

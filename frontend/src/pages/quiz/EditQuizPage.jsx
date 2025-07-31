@@ -8,7 +8,6 @@ import { QuizForm } from "../../components/quiz/form/QuizForm";
 
 export default function EditQuizPage() {
     const quizData = useQuizStore(state => state.quizData);
-    const { quizId } = useParams();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -35,28 +34,38 @@ export default function EditQuizPage() {
         }
 
         const promises = [];
+        const quizId = quizData.id;
+        const newQuizData = { ...quizData };
 
         if (title !== quizData.title) {
             promises.push(quizApi.update_title(quizId, title));
+            newQuizData.title = title;
         }
         if (description !== quizData.description) {
             promises.push(quizApi.update_description(quizId, description));
+            newQuizData.description = description;
         }
         if (code !== quizData.code) {
             promises.push(quizApi.update_code(quizId, code));
+            newQuizData.code = code;
         }
         if (maxParticipants !== quizData.max_participants) {
             promises.push(quizApi.update_max_participants(quizId, maxParticipants));
+            newQuizData.max_participants = maxParticipants;
         }
         if ((isPrivate && privateKey !== quizData.key) || (!isPrivate && quizData.key)) {
             promises.push(quizApi.update_key(quizId, isPrivate ? privateKey : ""));
+            newQuizData.is_private = isPrivate;
+            newQuizData.key = privateKey;
         }
         if (topic !== quizData.topic) {
             promises.push(quizApi.update_topic(quizId, topic));
+            newQuizData.topic = topic;
         }
 
         try {
             await Promise.all(promises);
+            useQuizStore.getState().setQuizData(newQuizData);
             navigate(`/quiz/${quizId}/content`);
         } catch (err) {
             if (err.response?.status === 409) {

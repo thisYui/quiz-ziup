@@ -1,6 +1,9 @@
 class Quiz::Question::FillInController < ApplicationController
   def add_result
-    result = FillResult.new(question_id: params[:question_id])
+    result = FillResult.new(
+      question_id: params[:question_id],
+      content: ""
+    )
     return unless is_true(result.save)
 
     render json: { status: "success", message: "Result added successfully", result_id: result.id }, status: :ok

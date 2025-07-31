@@ -1,5 +1,6 @@
 import { quizApi } from '../services/apiService.js';
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { ERROR } from "../constants/index.js";
 
 export function useQuiz() {
@@ -35,23 +36,24 @@ export function useQuiz() {
     return { joinQuiz, getQuiz };
 }
 
-export const useQuizStore = create((set) => ({
-    quizData: {},
-    neverStarted: true,
-    questionData: [
-        // {
-        //     question: {},
-        //     options: [{...},...],
-        //     results: [{...},...],
-        // }
-    ],
+export const useQuizStore = create(
+    persist(
+        (set) => ({
+            quizData: {},
+            neverStarted: true,
+            questionData: [],
 
-    setQuizData: (data) => { set({ quizData: data }); },
-    setNeverStarted: (value) => set({ neverStarted: value }),
-    setQuestionData: (data) => { set({ questionData: data }); },
+            setQuizData: (data) => set({ quizData: data }),
+            setNeverStarted: (value) => set({ neverStarted: value }),
+            setQuestionData: (data) => set({ questionData: data }),
 
-    clearQuizData: () => {
-        set({ quizData: {}, neverStarted: true, questionData: [] });
-    },
-
-}));
+            clearQuizData: () => {
+                set({ quizData: {}, neverStarted: true, questionData: [] });
+            },
+        }),
+        {
+            name: 'quiz-store',
+            getStorage: () => localStorage,
+        }
+    )
+);

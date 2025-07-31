@@ -96,6 +96,23 @@ export const authApi = {
         localStorage.removeItem('token');
 
         return response.data;
+    },
+
+    renewToken: async () => {
+        const token = {
+            jti: localStorage.getItem('token'),
+            device: navigator.platform,
+            user_agent: navigator.userAgent,
+        };
+
+        const response = await apiClient.post('/auth/renew_token', token);
+
+        if (response.data.token) {
+            setAuthToken(response.data.token);
+            localStorage.setItem('token', response.data.token);
+        }
+
+        return response.data;
     }
 };
 
@@ -119,6 +136,22 @@ export const quizApi = {
     },
     add_question: async (quiz_id, question_data) => {
         const response = await apiClient.post(`/quiz/${quiz_id}/add_question`, question_data);
+        return response.data;
+    },
+    remove_question: async (quiz_id, question_id) => {
+        const response = await apiClient.post(`/quiz/${quiz_id}/remove_question`, { question_id: question_id });
+        return response.data;
+    },
+    hide_question: async (quiz_id, question_id) => {
+        const response = await apiClient.post(`/quiz/${quiz_id}/hide_question`, { question_id: question_id });
+        return response.data;
+    },
+    show_question: async (quiz_id, question_id) => {
+        const response = await apiClient.post(`/quiz/${quiz_id}/show_question`, { question_id: question_id });
+        return response.data;
+    },
+    get_content: async (quiz_id) => {
+        const response = await apiClient.post(`/quiz/${quiz_id}/get_content_quiz`);
         return response.data;
     },
     update_title: async (quiz_id, new_title) => {
@@ -196,6 +229,65 @@ export const accountApi = {
         sessionStorage.clear();
         localStorage.removeItem('token');
         return response.data;
+    },
+};
+
+export const questionApi = {
+    update: async (question_id, type, question, options, results) => {
+        const response = await apiClient.post(`/quiz/question/${question_id}/update`, {
+            type: type,
+            question: question,
+            options: options,
+            results: results
+        });
+        return response.data;
+    },
+    choice: {
+        add_option: async (question_id,  position) => {
+            const response = await apiClient.post(`/quiz/question/${question_id}/choice/add_option`, { position: position });
+            return response.data;
+        },
+        choice_result: async (question_id, option_id) => {
+            const response = await apiClient.post(`/quiz/question/${question_id}/choice/choice_result`, { option_id: option_id });
+            return response.data;
+        },
+        remove_option: async (question_id, option_id) => {
+            const response = await apiClient.post(`/quiz/question/${question_id}/choice/remove_option`, { option_id: option_id });
+            return response.data;
+        },
+    },
+    matching: {
+        add_option: async (question_id, side, position) => {
+            const response = await apiClient.post(`/quiz/question/${question_id}/match/add_option`,
+                { side: side, position: position }
+            );
+            return response.data;
+        },
+        remove_option: async (question_id, option_id) => {
+            const response = await apiClient.post(`/quiz/question/${question_id}/match/remove_option`, { option_id: option_id });
+            return response.data;
+        },
+        add_result: async (question_id, option_left_id, option_right_id) => {
+            const response = await apiClient.post(`/quiz/question/${question_id}/match/add_result`, {
+                option_left_id: option_left_id,
+                option_right_id: option_right_id
+            });
+            return response.data;
+        },
+        remove_result: async (question_id, result_id) => {
+            const response = await apiClient.post(`/quiz/question/${question_id}/match/remove_result`, {result_id: result_id});
+            return response.data;
+        },
+    },
+    fill_in_blank: {
+        add_result: async (question_id) => {
+            const response = await apiClient.post(`/quiz/question/${question_id}/fill/add_result`);
+            return response.data;
+        },
+        remove_result: async (question_id, result_id) => {
+            const response = await apiClient.post(`/quiz/question/${question_id}/fill/remove_result`, {result_id: result_id});
+            return response.data;
+        },
     },
 };
 

@@ -15,27 +15,25 @@ Rails.application.routes.draw do
   end
 
   namespace :quiz do
-    scope ":quiz_id" do
-      namespace :question do
-        scope ":question_id" do
-          # Question actions
-          post "update",                      to: "general#update"
+    namespace :question do
+      scope ":question_id" do
+        # Question actions
+        post "update",                            to: "general#update"
 
-          # Choice actions
-          post "add_option",                  to: "choice#add_option"
-          post "remove_option",               to: "choice#remove_option"
-          post "choice_result",               to: "choice#choice_result"
+        # Choice actions
+        post "choice/add_option",                 to: "choice#add_option"
+        post "choice/remove_option",              to: "choice#remove_option"
+        post "choice/choice_result",              to: "choice#choice_result"
 
-          # Matching actions
-          post "add_option",                  to: "matching#add_option"
-          post "remove_option",               to: "matching#remove_option"
-          post "add_result",                  to: "matching#add_result"
-          post "remove_result",               to: "matching#remove_result"
+        # Matching actions
+        post "match/add_option",                  to: "matching#add_option"
+        post "match/remove_option",               to: "matching#remove_option"
+        post "match/add_result",                  to: "matching#add_result"
+        post "match/remove_result",               to: "matching#remove_result"
 
-          # Fill in actions
-          post "add_result",                  to: "fill_in#add_result"
-          post "remove_result",               to: "fill_in#remove_result"
-        end
+        # Fill in actions
+        post "fill/add_result",                   to: "fill_in#add_result"
+        post "fill/remove_result",                to: "fill_in#remove_result"
       end
     end
 
@@ -55,7 +53,9 @@ Rails.application.routes.draw do
     post "create",                             to: "create#create"
     post ":quiz_id/delete",                    to: "create#delete"
     post ":quiz_id/add_question",              to: "create#add_question"
-    post ":quiz_id/remove_question/:question_id",         to: "create#remove_question"
+    post ":quiz_id/remove_question",           to: "create#remove_question"
+    post ":quiz_id/hide_question",             to: "create#hide_question"
+    post ":quiz_id/show_question",             to: "create#show_question"
 
     # Update actions
     post ":quiz_id/update_title",              to: "update#update_title"

@@ -40,7 +40,7 @@ class Auth::AuthenticationController < ApplicationController
 
   def renew_token
     ip_address = request.remote_ip
-    new_jti = JwtToken.renew_token(params[:token], ip_address)
+    new_jti = JwtToken.renew_token(params, ip_address)
     if new_jti
       render json: { token: new_jti }, status: :ok
     else

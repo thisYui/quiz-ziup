@@ -1,235 +1,181 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import Xarrow from "react-xarrows";
 import AnswerForm from "./AnswerForm.jsx";
+import { questionApi } from "../../../services/apiService.js";
 
-export default function MatchingQuestion({ options = [], results = [] }) {
+const SIDE = {
+    LEFT: 0,
+    RIGHT: 1,
+};
+
+export default function MatchingQuestion({ questionId, content, options = [], results = [] }) {
     const [leftItems, setLeftItems] = useState([]);
     const [rightItems, setRightItems] = useState([]);
     const [connections, setConnections] = useState([]);
-    const [draggedItem, setDraggedItem] = useState(null);
-    const [draggedSide, setDraggedSide] = useState(null);
+    const [dragged, setDragged] = useState(null);
+    const contentRefs = useRef({}); // id -> ref
 
-    const leftRefs = useRef({});
-    const rightRefs = useRef({});
+    const matchApi = questionApi.matching;
 
-    // Initialize from props
     useEffect(() => {
-        const left = options.filter(opt => opt.side === 0);
-        const right = options.filter(opt => opt.side === 1);
-        setLeftItems(left);
-        setRightItems(right);
-
-        const initConnections = results.map(res => ({
-            leftId: res.option_left_id,
-            rightId: res.option_right_id
-        }));
-        setConnections(initConnections);
+        setLeftItems(options.filter((o) => o.side === SIDE.LEFT));
+        setRightItems(options.filter((o) => o.side === SIDE.RIGHT));
+        setConnections(results);
     }, [options, results]);
 
-    const handleItemChange = (id, side, value) => {
-        const updateFn = side === "left" ? setLeftItems : setRightItems;
-        const list = side === "left" ? leftItems : rightItems;
-        updateFn(
-            list.map(item => (item.id === id ? { ...item, text: value } : item))
-        );
-    };
-
-    const addItem = (side) => {
-        const list = side === "left" ? leftItems : rightItems;
-        const updateFn = side === "left" ? setLeftItems : setRightItems;
-        const newId = Date.now();
-        updateFn([...list, { id: newId, text: "", side: side === "left" ? 0 : 1 }]);
-    };
-
-    const removeItem = (id, side) => {
-        const list = side === "left" ? leftItems : rightItems;
-        const updateFn = side === "left" ? setLeftItems : setRightItems;
-        if (list.length > 1) {
-            updateFn(list.filter(item => item.id !== id));
-            setConnections(
-                connections.filter(conn =>
-                    side === "left" ? conn.leftId !== id : conn.rightId !== id
-                )
-            );
+    const handleAddItem = async (side) => {
+        const list = side === SIDE.LEFT ? leftItems : rightItems;
+        const position = Math.max(...list.map((i) => i.position ?? 0), 0) + 1;
+        const res = await matchApi.add_option(questionId, side, position);
+        if (res?.option_id) {
+            const newItem = { id: res.option_id, content: "", side, position };
+            if (side === SIDE.LEFT) setLeftItems((prev) => [...prev, newItem]);
+            else setRightItems((prev) => [...prev, newItem]);
         }
     };
 
-    const handleDragStart = (item, side) => {
-        setDraggedItem(item);
-        setDraggedSide(side);
+    const handleRemoveItem = async (id, side) => {
+        const res = await matchApi.remove_option(questionId, id);
+        if (res.error) return;
+        if (side === SIDE.LEFT) {
+            setLeftItems((prev) => prev.filter((i) => i.id !== id));
+            setConnections((prev) => prev.filter((c) => c.option_left_id !== id));
+        } else {
+            setRightItems((prev) => prev.filter((i) => i.id !== id));
+            setConnections((prev) => prev.filter((c) => c.option_right_id !== id));
+        }
+        delete contentRefs.current[id];
     };
 
-    const handleDrop = (targetItem, targetSide) => {
-        if (!draggedItem || draggedSide === targetSide) return;
-
-        const newConnection = {
-            leftId: draggedSide === "left" ? draggedItem.id : targetItem.id,
-            rightId: draggedSide === "right" ? draggedItem.id : targetItem.id
-        };
-
-        // Remove existing connections for either side
-        const filtered = connections.filter(
-            conn =>
-                conn.leftId !== newConnection.leftId &&
-                conn.rightId !== newConnection.rightId
-        );
-
-        setConnections([...filtered, newConnection]);
-        setDraggedItem(null);
-        setDraggedSide(null);
+    const handleConnect = async (draggedItem, draggedSide, targetItem, targetSide) => {
+        if (draggedSide === targetSide) return;
+        const leftId = draggedSide === SIDE.LEFT ? draggedItem.id : targetItem.id;
+        const rightId = draggedSide === SIDE.RIGHT ? draggedItem.id : targetItem.id;
+        const res = await matchApi.add_result(questionId, leftId, rightId);
+        if (!res?.result_id) return;
+        setConnections((prev) => {
+            const filtered = prev.filter(
+                (c) => c.option_left_id !== leftId && c.option_right_id !== rightId
+            );
+            return [...filtered, { id: res.result_id, option_left_id: leftId, option_right_id: rightId }];
+        });
     };
 
-    const removeConnection = (leftId, rightId) => {
-        setConnections(
-            connections.filter(conn => !(conn.leftId === leftId && conn.rightId === rightId))
-        );
+    const handleDisconnect = async (resultId) => {
+        const res = await matchApi.remove_result(questionId, resultId);
+        if (res.error) return;
+        setConnections((prev) => prev.filter((c) => c.id !== resultId));
     };
+
+    const renderItems = (items, side) => (
+        <div className="flex-1 min-w-[300px] max-w-[48%] space-y-4">
+            {items.map((item, index) => {
+                const connectedResult =
+                    side === SIDE.LEFT
+                        ? connections.find((c) => c.option_left_id === item.id)
+                        : connections.find((c) => c.option_right_id === item.id);
+                const resultId = connectedResult?.id;
+
+                if (!contentRefs.current[item.id]) {
+                    contentRefs.current[item.id] = React.createRef();
+                }
+
+                return (
+                    <div
+                        key={item.id}
+                        id={`${side === SIDE.LEFT ? "left" : "right"}-${item.id}`}
+                        draggable
+                        onDragStart={() => setDragged({ item, side })}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => {
+                            if (dragged) {
+                                handleConnect(dragged.item, dragged.side, item, side);
+                                setDragged(null);
+                            }
+                        }}
+                        className={`relative p-4 rounded-lg cursor-move flex items-start gap-3 transition-colors ${
+                            side === SIDE.LEFT ? "bg-blue-600" : "bg-orange-500"
+                        }`}
+                    >
+            <span className="w-8 h-8 bg-white text-black font-bold flex items-center justify-center rounded shrink-0">
+              {index + 1}
+            </span>
+
+                        <div
+                            ref={contentRefs.current[item.id]}
+                            contentEditable
+                            suppressContentEditableWarning
+                            data-placeholder={`${side === SIDE.LEFT ? "Trái" : "Phải"} ${index + 1}`}
+                            onBlur={(e) => {
+                                const newText = e.currentTarget.textContent;
+                                const updater = side === SIDE.LEFT ? setLeftItems : setRightItems;
+                                updater((prev) =>
+                                    prev.map((i) => (i.id === item.id ? { ...i, content: newText } : i))
+                                );
+                            }}
+                            className="flex-1 outline-none text-white placeholder-white/70 bg-transparent px-1 py-0.5 whitespace-pre-wrap break-words"
+                            style={{
+                                minWidth: "50px",
+                                maxWidth: "100%",
+                                minHeight: "2rem",
+                                maxHeight: "6rem",
+                                overflow: "auto",
+                                wordBreak: "break-word",
+                                overflowWrap: "anywhere",
+                            }}
+                            dangerouslySetInnerHTML={{ __html: item.content }}
+                        />
+
+                        {items.length > 1 && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveItem(item.id, side);
+                                }}
+                                className="w-6 h-6 bg-white/20 rounded text-white hover:bg-white/30 flex items-center justify-center"
+                            >
+                                ×
+                            </button>
+                        )}
+
+                        {connectedResult && (
+                            <button
+                                onClick={() => handleDisconnect(resultId)}
+                                className="ml-2 px-2 py-1 bg-white/20 text-xs text-white rounded hover:bg-red-500"
+                            >
+                                Hủy nối
+                            </button>
+                        )}
+                    </div>
+                );
+            })}
+            <button
+                onClick={() => handleAddItem(side)}
+                className="w-16 h-16 bg-[#84CC16] rounded-lg flex items-center justify-center text-white text-2xl hover:bg-[#65A30D]"
+            >
+                +
+            </button>
+        </div>
+    );
 
     return (
-        <div>
-            <AnswerForm />
-
-            <div className="relative">
-                <div className="flex flex-wrap gap-12 justify-between mb-6">
-                    {/* Left Column */}
-                    <div className="flex-1 min-w-[300px] space-y-4">
-                        {leftItems.map((item, index) => (
-                            <div
-                                key={item.id}
-                                className="relative"
-                                draggable
-                                onDragStart={() => handleDragStart(item, "left")}
-                                onDragOver={(e) => e.preventDefault()}
-                                onDrop={() => handleDrop(item, "left")}
-                                ref={(el) => (leftRefs.current[item.id] = el)}
-                            >
-                                <div className="bg-[#2563EB] rounded-lg p-4 cursor-move hover:bg-[#1D4ED8] transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <span className="w-8 h-8 bg-white rounded text-[#2563EB] font-bold flex items-center justify-center">
-                                            {index + 1}
-                                        </span>
-                                        <input
-                                            type="text"
-                                            value={item.text}
-                                            onChange={(e) => handleItemChange(item.id, "left", e.target.value)}
-                                            placeholder={`Trái ${index + 1}`}
-                                            className="flex-1 bg-transparent text-white placeholder-white/70 outline-none"
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
-                                        {leftItems.length > 1 && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    removeItem(item.id, "left");
-                                                }}
-                                                className="w-6 h-6 bg-white/20 rounded text-white hover:bg-white/30 transition-colors flex items-center justify-center"
-                                            >
-                                                ×
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-
-                        <button
-                            onClick={() => addItem("left")}
-                            className="w-16 h-16 bg-[#84CC16] rounded-lg flex items-center justify-center text-white text-2xl hover:bg-[#65A30D] transition-colors"
-                        >
-                            +
-                        </button>
-                    </div>
-
-                    {/* Right Column */}
-                    <div className="flex-1 min-w-[300px] space-y-4">
-                        {rightItems.map((item, index) => (
-                            <div
-                                key={item.id}
-                                className="relative"
-                                draggable
-                                onDragStart={() => handleDragStart(item, "right")}
-                                onDragOver={(e) => e.preventDefault()}
-                                onDrop={() => handleDrop(item, "right")}
-                                ref={(el) => (rightRefs.current[item.id] = el)}
-                            >
-                                <div
-                                    className={`rounded-lg p-4 cursor-move transition-colors ${
-                                        index % 2 === 0
-                                            ? "bg-[#2563EB] hover:bg-[#1D4ED8]"
-                                            : "bg-[#FF8C42] hover:bg-[#E07B39]"
-                                    }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <span className="w-8 h-8 bg-white rounded text-black font-bold flex items-center justify-center">
-                                            {index + 1}
-                                        </span>
-                                        <input
-                                            type="text"
-                                            value={item.text}
-                                            onChange={(e) => handleItemChange(item.id, "right", e.target.value)}
-                                            placeholder={`Phải ${index + 1}`}
-                                            className="flex-1 bg-transparent text-white placeholder-white/70 outline-none"
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
-                                        {rightItems.length > 1 && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    removeItem(item.id, "right");
-                                                }}
-                                                className="w-6 h-6 bg-white/20 rounded text-white hover:bg-white/30 transition-colors flex items-center justify-center"
-                                            >
-                                                ×
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-
-                        <button
-                            onClick={() => addItem("right")}
-                            className="w-16 h-16 bg-[#84CC16] rounded-lg flex items-center justify-center text-white text-2xl hover:bg-[#65A30D] transition-colors"
-                        >
-                            +
-                        </button>
-                    </div>
-                </div>
-
-                {/* Connection Lines */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-                    {connections.map((conn, index) => {
-                        const leftEl = leftRefs.current[conn.leftId];
-                        const rightEl = rightRefs.current[conn.rightId];
-
-                        if (!leftEl || !rightEl) return null;
-
-                        const leftRect = leftEl.getBoundingClientRect();
-                        const rightRect = rightEl.getBoundingClientRect();
-
-                        const containerRect = leftEl.offsetParent.getBoundingClientRect();
-
-                        const x1 = leftRect.right - containerRect.left;
-                        const y1 = leftRect.top + leftRect.height / 2 - containerRect.top;
-
-                        const x2 = rightRect.left - containerRect.left;
-                        const y2 = rightRect.top + rightRect.height / 2 - containerRect.top;
-
-                        return (
-                            <line
-                                key={index}
-                                x1={x1}
-                                y1={y1}
-                                x2={x2}
-                                y2={y2}
-                                stroke="#FF8C42"
-                                strokeWidth="3"
-                                className="cursor-pointer"
-                                onClick={() => removeConnection(conn.leftId, conn.rightId)}
-                            />
-                        );
-                    })}
-                </svg>
+        <div className="relative">
+            <AnswerForm content={content} />
+            <div className="flex flex-wrap gap-12 justify-between mb-6 items-start">
+                {renderItems(leftItems, SIDE.LEFT)}
+                {renderItems(rightItems, SIDE.RIGHT)}
             </div>
+            {connections.map((conn) => (
+                <Xarrow
+                    key={conn.id}
+                    start={`left-${conn.option_left_id}`}
+                    end={`right-${conn.option_right_id}`}
+                    color="#00FFFF"
+                    strokeWidth={3}
+                    showHead={false}
+                    curveness={0.5}
+                />
+            ))}
         </div>
     );
 }

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { QUESTION_TYPE, LEVEL_QUESTION } from "../../../constants/index.js";
 
-export default function HeaderQuestion({ questionType, onTypeChange }) {
-    const [selectedLevel, setSelectedLevel] = useState(0);
-    const [point, setPoint] = useState(1);
+export default function HeaderQuestion({ questionData, onTypeChange }) {
+    const [selectedLevel, setSelectedLevel] = useState(questionData.level);
+    const [point, setPoint] = useState(questionData.score);
 
     return (
         <div className="flex justify-between items-center mb-6 mx-auto gap-4">
@@ -42,7 +42,7 @@ export default function HeaderQuestion({ questionType, onTypeChange }) {
             {/* Loại câu hỏi */}
             <div className="flex items-center gap-2">
                 <select
-                    value={questionType}
+                    value={questionData.question_type}
                     onChange={(e) => onTypeChange(Number(e.target.value))}
                     className="px-4 py-2 bg-[#F59E0B] rounded-lg text-black font-medium focus:outline-none"
                 >

@@ -6,17 +6,19 @@ import { QUESTION_TYPE_NUMBER } from "../../../constants/index.js";
 import { useQuizStore } from "../../../hooks/useQuiz.js";
 import { FooterQuestion, HeaderQuestion } from "./index.js";
 
-export default function SectionRenderer({ type, data }) {
+export default function SectionRenderer({ type, data, deleteQuestion }) {
     const neverStarted = useQuizStore(state => state.neverStarted);
     const [questionType, setQuestionType] = useState(type);
 
     const commonProps = {
+        questionId: data.question.id,
         questionType,
+        content: data.question.content || "",
         options: data.options || [],
         results: data.results || [],
     };
 
-    let QuestionComponent = null;
+    let QuestionComponent;
 
     switch (questionType) {
         case QUESTION_TYPE_NUMBER.SINGLE_CHOICE:
@@ -37,12 +39,13 @@ export default function SectionRenderer({ type, data }) {
         <div className="flex justify-center p-6">
             <div className="max-w-4xl mx-auto">
                 <HeaderQuestion
-                    questionType={questionType}
+                    questionData={data.question}
                     onTypeChange={setQuestionType}
                 />
                 {QuestionComponent}
                 <FooterQuestion
-                    hideQuestion={data.hideQuestion}
+                    questionData={data.question}
+                    deleteQuestion={deleteQuestion}
                     neverStarted={neverStarted}
                 />
             </div>

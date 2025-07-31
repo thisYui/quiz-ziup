@@ -4,8 +4,37 @@ import AuthRoutes from './routes/AuthRoutes.jsx';
 import QuizRoutes from "./routes/QuizRoutes.jsx";
 import AccountRoutes from "./routes/AccountRoutes.jsx";
 import ViewRoutes from "./routes/ViewRoutes.jsx";
+import { useEffect } from 'react';
+import { authApi } from "./services/apiService.js";
 
 function App() {
+    useEffect(() => {
+        /**
+         *********** RENEW TOKEN EVERY 45 MINUTES ***********
+         */
+
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        let intervalId;
+
+        const handleTokenRenewal = async () => {
+            try {
+                await authApi.renewToken();
+            } catch (err) {
+                console.error("Token renewal failed:", err);
+            }
+        };
+
+        handleTokenRenewal();
+
+        intervalId = setInterval(() => {
+            handleTokenRenewal();
+        }, 45 * 60 * 1000); // 45 phút
+
+        return () => clearInterval(intervalId);
+    }, []);
+
     return (
         <Router>
             <Routes>

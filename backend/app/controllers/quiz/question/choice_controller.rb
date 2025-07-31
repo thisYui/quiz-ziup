@@ -2,7 +2,7 @@ class Quiz::Question::ChoiceController < ApplicationController
   def add_option
     option = ChoiceOption.new(
       question_id: params[:question_id],
-      content: params[:content],
+      content: "",
       is_correct: false,
       position: params[:position]
     )

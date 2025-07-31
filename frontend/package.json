@@ -17,6 +17,7 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^7.6.3",
+    "react-xarrows": "^2.0.2",
     "tailwindcss-animate": "^1.0.7",
     "zustand": "^5.0.6"
   },
