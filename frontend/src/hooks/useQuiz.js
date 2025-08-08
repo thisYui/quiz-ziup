@@ -40,15 +40,15 @@ export const useQuizStore = create(
     persist(
         (set) => ({
             quizData: {},
-            neverStarted: true,
             questionData: [],
+            neverStarted: true,
 
             setQuizData: (data) => set({ quizData: data }),
-            setNeverStarted: (value) => set({ neverStarted: value }),
             setQuestionData: (data) => set({ questionData: data }),
+            setNeverStarted: (value) => set({ neverStarted: value }),
 
             clearQuizData: () => {
-                set({ quizData: {}, neverStarted: true, questionData: [] });
+                set({ quizData: {}, questionData: [], neverStarted: true });
             },
         }),
         {

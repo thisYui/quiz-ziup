@@ -8,18 +8,9 @@ class QuestionUtils
 
     # cập nhật từng trường nếu có
     question.content     = question_data[:content]     if question_data[:content].present?
-    question.description = question_data[:description] if question_data[:description].present?
     question.level       = question_data[:level]       if question_data[:level].present?
     question.time        = question_data[:time]        if question_data[:time].present?
     question.score       = question_data[:score]       if question_data[:score].present?
-
-    # nếu có cập nhật type thì xóa dữ liệu cũ trước khi cập nhật
-    if question_data[:question_type].present?
-      success = delete_option_and_result_of_question(question.id)
-      return nil unless success
-
-      question.question_type = question_data[:question_type]
-    end
 
     return nil unless question.save
 
@@ -53,6 +44,8 @@ class QuestionUtils
   end
 
   def self.update_option_and_result_of_question(question_id, type, options_data, results_data)
+    puts question_id, type, options_data, results_data
+
     case type
     when Question::TYPE[:single_choice], Question::TYPE[:multiple_choice]
       # Cập nhật các option của câu hỏi

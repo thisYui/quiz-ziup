@@ -14,11 +14,6 @@ export default function SidebarQuiz({quizData, addQuestion, onCanStart}) {
 
     function onAddQuestion() {
         addQuestion(QUESTION_FORM);
-        sessionStorage.setItem(
-            'position',
-            Number(sessionStorage.getItem('position') || 0) + 1
-        );
-
     }
 
     return (

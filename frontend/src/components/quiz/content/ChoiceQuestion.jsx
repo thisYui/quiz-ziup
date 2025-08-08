@@ -1,14 +1,62 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { CHOICE_FORM, QUESTION_TYPE_NUMBER } from "../../../constants/index.js";
 import AnswerForm from "./AnswerForm.jsx";
 import { questionApi } from "../../../services/apiService.js";
+import { useObserverStore } from "../../../hooks/useObserverStore.js";
 
-export default function ChoiceQuestion({ questionId, questionType, content, options = [] }) {
+export default function ChoiceQuestion({
+                                           questionId,
+                                           questionType,
+                                           content,
+                                           options = [],
+                                           activeSectionId
+                                       }) {
     const [position, setPosition] = useState(0);
     const [localOptions, setLocalOptions] = useState([]);
     const contentRefs = useRef({});
     const choiceApi = questionApi.choice;
+    const updateObserver = useObserverStore((state) => state.updateQuestionPart);
 
+    // Preserve cursor position helper
+    const saveCursorPosition = useCallback((element) => {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return null;
+
+        const range = selection.getRangeAt(0);
+        if (!element.contains(range.commonAncestorContainer)) return null;
+
+        return {
+            startOffset: range.startOffset,
+            endOffset: range.endOffset,
+            startContainer: range.startContainer,
+            endContainer: range.endContainer
+        };
+    }, []);
+
+    const restoreCursorPosition = useCallback((element, position) => {
+        if (!position) return;
+
+        try {
+            const selection = window.getSelection();
+            const range = document.createRange();
+
+            range.setStart(position.startContainer, position.startOffset);
+            range.setEnd(position.endContainer, position.endOffset);
+
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } catch (err) {
+            // Fallback: move cursor to end
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(element);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }, []);
+
+    // Initialize from props
     useEffect(() => {
         const mapped = options.map(opt => ({
             ...opt,
@@ -19,94 +67,151 @@ export default function ChoiceQuestion({ questionId, questionType, content, opti
         const max = Math.max(...options.map(o => o.position ?? 0), 0);
         setPosition(max + 1);
 
-        // Cập nhật lại nội dung cho từng contentEditable sau khi mount
+        // Sync contentEditable without losing cursor
         setTimeout(() => {
             mapped.forEach(opt => {
                 const el = contentRefs.current[opt.id];
                 if (el && el.textContent !== opt.text) {
+                    const cursorPos = saveCursorPosition(el);
                     el.textContent = opt.text;
+                    restoreCursorPosition(el, cursorPos);
                 }
             });
         }, 0);
-    }, [options]);
+    }, [options, saveCursorPosition, restoreCursorPosition]);
 
-    const handleOptionCorrectChange = (optionId) => {
-        const response = choiceApi.choice_result(questionId, optionId);
-        if (response.error) {
-            console.error("Failed to update choice result:", response.error);
-            return;
+    // Update observer when active
+    useEffect(() => {
+        if (activeSectionId !== questionId) return;
+
+        // Prepare results array based on question type
+        const results = localOptions
+            .filter(opt => opt.is_correct)
+            .map(opt => ({ id: opt.id, is_correct: true }));
+
+        updateObserver(questionId, {
+            options: localOptions,
+            results: results
+        });
+    }, [localOptions, activeSectionId, questionId, updateObserver]);
+
+    const handleOptionCorrectChange = async (optionId) => {
+        try {
+            if (questionType === QUESTION_TYPE_NUMBER.SINGLE_CHOICE) {
+                const response = await choiceApi.single_result(questionId, optionId);
+                if (response.error) {
+                    console.error("Failed to update single choice result:", response.error);
+                    return;
+                }
+
+                // Update local state - only one answer is correct
+                setLocalOptions(prev =>
+                    prev.map(opt => ({
+                        ...opt,
+                        is_correct: opt.id === optionId
+                    }))
+                );
+            } else {
+                const response = await choiceApi.choice_result(questionId, optionId);
+                if (response.error) {
+                    console.error("Failed to update choice result:", response.error);
+                    return;
+                }
+
+                // Toggle correct/incorrect
+                setLocalOptions(prev =>
+                    prev.map(opt =>
+                        opt.id === optionId ? { ...opt, is_correct: !opt.is_correct } : opt
+                    )
+                );
+            }
+        } catch (err) {
+            console.error("Error updating option correct status:", err);
         }
-
-        setLocalOptions(prev =>
-            prev.map(option => ({
-                ...option,
-                isCorrect:
-                    questionType === QUESTION_TYPE_NUMBER.SINGLE_CHOICE
-                        ? option.id === optionId
-                        : option.id === optionId
-                            ? !option.isCorrect
-                            : option.isCorrect
-            }))
-        );
     };
 
-    const handleOptionTextChange = (optionId, newText) => {
+    const handleOptionTextChange = useCallback((optionId, newText) => {
         setLocalOptions(prev =>
             prev.map(option =>
-                option.id === optionId ? { ...option, text: newText } : option
+                option.id === optionId ? { ...option, text: newText, content: newText } : option
             )
         );
-    };
+    }, []);
 
-    const addOption = (newOption) => {
+    const addOption = useCallback((newOption) => {
         setLocalOptions(prev => [...prev, newOption]);
         setPosition(prev => prev + 1);
-    };
+    }, []);
 
-    async function handleAddOption() {
-        const { option_id } = await choiceApi.add_option(questionId, position);
-        const newOption = {
-            ...CHOICE_FORM,
-            id: option_id,
-            position
-        };
-        addOption(newOption);
-    }
+    const handleAddOption = async () => {
+        try {
+            const { option_id } = await choiceApi.add_option(questionId, position);
+            const newOption = {
+                ...CHOICE_FORM,
+                id: option_id,
+                position,
+                text: "",
+                content: "",
+                is_correct: false
+            };
+            addOption(newOption);
+        } catch (err) {
+            console.error("Error adding option:", err);
+        }
+    };
 
     const removeOption = async (optionId) => {
-        const response = await choiceApi.remove_option(questionId, optionId);
-        if (response.error) {
-            console.error("Failed to remove option:", response.error);
-            return;
-        }
+        if (localOptions.length <= 2) return;
 
-        if (localOptions.length > 2) {
+        try {
+            const response = await choiceApi.remove_option(questionId, optionId);
+            if (response.error) {
+                console.error("Failed to remove option:", response.error);
+                return;
+            }
+
             setLocalOptions(prev => prev.filter(option => option.id !== optionId));
+
+            // Cleanup ref
+            if (contentRefs.current[optionId]) {
+                delete contentRefs.current[optionId];
+            }
+        } catch (err) {
+            console.error("Error removing option:", err);
         }
     };
+
+    const handleTextInput = useCallback((optionId, e) => {
+        const newText = e.currentTarget.textContent;
+        handleOptionTextChange(optionId, newText);
+    }, [handleOptionTextChange]);
 
     return (
         <div>
-            {/* Câu hỏi */}
-            <AnswerForm content={content} />
+            {/* Question */}
+            <AnswerForm
+                questionId={questionId}
+                content={content}
+                activeSectionId={activeSectionId}
+            />
 
-            {/* Các lựa chọn */}
+            {/* Options */}
             <div className="space-y-4 mb-6">
                 {localOptions.map((option) => (
                     <div
                         key={option.id}
                         className="relative flex flex-col sm:flex-row gap-4 bg-[#FF8C42]/10 rounded-lg p-4"
                     >
-                        {/* Tick chọn */}
+                        {/* Correct tick */}
                         <button
                             onClick={() => handleOptionCorrectChange(option.id)}
                             className={`w-6 h-6 rounded-full border-2 flex items-center hover:bg-blue-600 justify-center transition-colors ${
-                                option.isCorrect
+                                option.is_correct
                                     ? "bg-blue-600 border-white"
                                     : "bg-white border-white/50"
                             }`}
                         >
-                            {option.isCorrect && (
+                            {option.is_correct && (
                                 <svg
                                     className="w-4 h-4 text-[#FF8C42]"
                                     fill="currentColor"
@@ -121,29 +226,32 @@ export default function ChoiceQuestion({ questionId, questionType, content, opti
                             )}
                         </button>
 
-                        {/* Nội dung lựa chọn */}
+                        {/* Option content */}
                         <div className="flex-1 relative w-[98%] min-h-[3rem]">
+                            {/* Placeholder */}
+                            {(!option.text || option.text.trim() === "") && (
+                                <div className="absolute inset-0 pointer-events-none p-4 text-white/60 flex items-center">
+                                    Nhập đáp án ở đây...
+                                </div>
+                            )}
+
                             <div
                                 ref={(el) => {
                                     if (el) contentRefs.current[option.id] = el;
                                 }}
                                 contentEditable
                                 suppressContentEditableWarning
+                                onInput={(e) => handleTextInput(option.id, e)}
                                 onBlur={(e) => {
                                     const newText = e.currentTarget.textContent;
                                     handleOptionTextChange(option.id, newText);
                                 }}
-                                className="w-full bg-[#FF8C42] text-white rounded-lg p-4 outline-none whitespace-pre-wrap break-all min-h-[3rem]"
+                                className="w-full bg-[#FF8C42] text-white rounded-lg p-4 outline-none whitespace-pre-wrap break-all min-h-[3rem] focus:ring-2 focus:ring-[#FF8C42]/50"
                                 spellCheck={false}
                             />
-
-                            {(!option.text || option.text.trim() === "") && (
-                                <div className="absolute inset-0 pointer-events-none p-4 text-white/60">
-                                    Nhập đáp án ở đây...
-                                </div>
-                            )}
                         </div>
 
+                        {/* Remove button */}
                         {localOptions.length > 2 && (
                             <button
                                 onClick={() => removeOption(option.id)}
@@ -156,7 +264,7 @@ export default function ChoiceQuestion({ questionId, questionType, content, opti
                     </div>
                 ))}
 
-                {/* Nút thêm lựa chọn */}
+                {/* Add option button */}
                 <button
                     onClick={handleAddOption}
                     className="w-16 h-16 bg-[#84CC16] rounded-lg flex items-center justify-center text-white text-2xl hover:bg-[#65A30D] transition-colors"

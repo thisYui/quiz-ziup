@@ -8,7 +8,7 @@ export const QUESTION_FORM = {
         content: '',
         score: 1,
         level: LEVEL_QUESTION_NUMBER.EASY,
-        position: Number(sessionStorage.getItem('position')) || 0,
+        position: null,
         time: 30,
         hide: false
     },

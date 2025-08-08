@@ -242,6 +242,10 @@ export const questionApi = {
         });
         return response.data;
     },
+    change_type: async (question_id, type) => {
+        const response = await apiClient.post(`/quiz/question/${question_id}/change_type`, { type: type });
+        return response.data;
+    },
     choice: {
         add_option: async (question_id,  position) => {
             const response = await apiClient.post(`/quiz/question/${question_id}/choice/add_option`, { position: position });
@@ -249,6 +253,10 @@ export const questionApi = {
         },
         choice_result: async (question_id, option_id) => {
             const response = await apiClient.post(`/quiz/question/${question_id}/choice/choice_result`, { option_id: option_id });
+            return response.data;
+        },
+        single_result: async (question_id, option_id) => {
+            const response = await apiClient.post(`/quiz/question/${question_id}/choice/single_result`, { option_id: option_id });
             return response.data;
         },
         remove_option: async (question_id, option_id) => {

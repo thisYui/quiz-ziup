@@ -19,11 +19,13 @@ Rails.application.routes.draw do
       scope ":question_id" do
         # Question actions
         post "update",                            to: "general#update"
+        post "change_type",                       to: "general#change_type"
 
         # Choice actions
         post "choice/add_option",                 to: "choice#add_option"
         post "choice/remove_option",              to: "choice#remove_option"
         post "choice/choice_result",              to: "choice#choice_result"
+        post "choice/single_result",              to: "choice#single_result"
 
         # Matching actions
         post "match/add_option",                  to: "matching#add_option"

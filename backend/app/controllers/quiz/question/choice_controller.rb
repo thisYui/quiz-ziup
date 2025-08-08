@@ -24,4 +24,17 @@ class Quiz::Question::ChoiceController < ApplicationController
 
     render json: { result: result }, status: :ok
   end
+
+  def single_result
+    question_id = params[:question_id]
+    ChoiceOption.where(question_id: question_id).each do |option|
+      # Set all options to not correct
+      option.update(is_correct: false) if option.is_correct
+    end
+
+    result = ChoiceOption.find_by(id: params[:option_id], question_id: params[:question_id])
+    return unless result and is_true(result.update(is_correct: false))
+
+    render json: { result: result }, status: :ok
+  end
 end

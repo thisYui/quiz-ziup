@@ -5,10 +5,18 @@ import FillInQuestion from "./FillInQuestion.jsx";
 import { QUESTION_TYPE_NUMBER } from "../../../constants/index.js";
 import { useQuizStore } from "../../../hooks/useQuiz.js";
 import { FooterQuestion, HeaderQuestion } from "./index.js";
+import { useObserverStore } from "../../../hooks/useObserverStore.js";
 
-export default function SectionRenderer({ type, data, deleteQuestion }) {
-    const neverStarted = useQuizStore(state => state.neverStarted);
+export default function SectionRenderer({
+                                            type,
+                                            data,
+                                            changeQuestionType,
+                                            deleteQuestion,
+                                            activeSectionId
+                                        }) {
+    const neverStarted = useQuizStore((state) => state.neverStarted);
     const [questionType, setQuestionType] = useState(type);
+    const updateObserver = useObserverStore((state) => state.updateQuestionPart);
 
     const commonProps = {
         questionId: data.question.id,
@@ -16,6 +24,7 @@ export default function SectionRenderer({ type, data, deleteQuestion }) {
         content: data.question.content || "",
         options: data.options || [],
         results: data.results || [],
+        activeSectionId
     };
 
     let QuestionComponent;
@@ -35,18 +44,43 @@ export default function SectionRenderer({ type, data, deleteQuestion }) {
             QuestionComponent = <div className="text-red-500">Loại câu hỏi không hợp lệ</div>;
     }
 
+    async function updateQuestionType(newType) {
+        try {
+            const newId = await changeQuestionType(data.question.id, newType);
+            if (newId) {
+                // Update data immutably instead of direct mutation
+                const newData = {
+                    ...data,
+                    question: {
+                        ...data.question,
+                        id: newId
+                    }
+                };
+
+                setQuestionType(newType);
+                updateObserver(newId, { type: newType });
+
+                return newId;
+            }
+        } catch (err) {
+            console.error("Error updating question type:", err);
+        }
+    }
+
     return (
         <div className="flex justify-center p-6">
             <div className="max-w-4xl mx-auto">
                 <HeaderQuestion
                     questionData={data.question}
-                    onTypeChange={setQuestionType}
+                    onTypeChange={updateQuestionType}
+                    activeSectionId={activeSectionId}
                 />
                 {QuestionComponent}
                 <FooterQuestion
                     questionData={data.question}
                     deleteQuestion={deleteQuestion}
                     neverStarted={neverStarted}
+                    activeSectionId={activeSectionId}
                 />
             </div>
         </div>
