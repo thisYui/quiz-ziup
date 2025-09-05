@@ -1,7 +1,7 @@
 class JwtToken < ApplicationRecord
   belongs_to :user
 
-  def self.find(params)
+  def self.find_by_token_info(params)
     # Tìm kiếm token theo thông tin thiết bị
     JwtToken.where(
       device: params[:device],
@@ -12,10 +12,14 @@ class JwtToken < ApplicationRecord
 
   # Thêm token mới
 
-  def self.add_token(user_id, params = {})
+  def self.add_token(user_id, params, ip_address)
+    # Kiểm tra thông tin thiết bị
+    return nil unless params[:device] && params[:user_agent]
+
+    # Tạo một hash chứa thông tin JWT token
     jwt_token = {
       device: params[:device],
-      ip_address: params[:ip_address],
+      ip_address: ip_address,
       user_agent: params[:user_agent]
     }
 
@@ -33,10 +37,10 @@ class JwtToken < ApplicationRecord
     jti
   end
 
-  def self.find_by_jti(jwt_token)
-    # tìm token theo thông tin thiết bị
-    record = JwtToken.find(jwt_token)
+  def self.find_by_jti(jwt_token, ip_address)
+    jwt_token[:ip_address] = ip_address
 
+    record = find_by_token_info(jwt_token)
     return nil if record.nil?
 
     begin
@@ -50,27 +54,28 @@ class JwtToken < ApplicationRecord
     nil
   end
 
-  def self.renew_token(jwt_token)
+  def self.renew_token(jwt_token, ip_address)
     # Tìm kiếm token theo thông tin thiết bị
-    record = JwtToken.find(jwt_token)
+    record = JwtToken.find_by_token_info(jwt_token)
 
     return nil if record.nil?
 
     # Tạo token mới
     new_jti = JwtService.encode({ user_id: record.user_id })
-    record.update(jti: new_jti, exp: 1.hour.from_now)
+    record.update(jti: new_jti, ip_address: ip_address, exp: 1.hour.from_now)
 
     new_jti
   end
 
-  def self.delete_token(jwt_token)
+  def self.delete_token(jwt_token, ip_address)
     # Tìm kiếm token theo thông tin thiết bị
-    record = JwtToken.find(jwt_token)
-
+    jwt_token[:ip_address] = ip_address
+    record = find_by_token_info(jwt_token)
     return nil if record.nil?
 
-    # Xóa token
-    if record.user_id == jwt_token[:user_id]
+    puts record.inspect
+
+    if record.user_id.to_i == jwt_token[:user_id].to_i
       record.destroy
       return true
     end

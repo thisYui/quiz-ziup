@@ -1,4 +1,12 @@
 vi:
+  general:
+    success: "Thành công"
+    failure: "Thất bại"
+    not_found: "Không tìm thấy"
+    invalid_params: "Thông tin không hợp lệ"
+    already_exists: "Dữ liệu đã tồn tại"
+    blank: "Thông tin không được để trống"
+    error: "Đã có lỗi xảy ra, vui lòng thử lại sau"
   auth:
     login:
       success: "Đăng nhập thành công"
@@ -25,6 +33,7 @@ vi:
       not_started: "Quiz chưa bắt đầu"
       invalid: "Không hợp lệ"
       invalid_key: "Khóa tham gia không hợp lệ"
+      unauthorized: "Bạn không có quyền tham gia quiz này"
     start:
       success: "Bắt đầu quiz thành công"
       failure: "Bắt đầu quiz thất bại"
@@ -35,10 +44,38 @@ vi:
       not_found: "Quiz không tồn tại"
       blank: "Thông tin quiz không được để trống"
       already_exists: "Dữ liệu đã tồn tại"
+      code_exists: "Mã câu hỏi đã tồn tại"
+    create:
+      success: "Tạo quiz thành công"
+      failure: "Tạo quiz thất bại"
+      blank: "Thông tin quiz không được để trống"
+      already_exists: "Dữ liệu đã tồn tại"
     end:
       success: "Kết thúc quiz thành công"
       failure: "Kết thúc quiz thất bại"
       not_found: "Quiz không tồn tại"
+    view:
+      error: "Lỗi khi lấy thông tin quiz"
+  question:
+    create:
+      success: "Tạo câu hỏi thành công"
+      failure: "Tạo câu hỏi thất bại"
+      blank: "Thông tin câu hỏi không được để trống"
+      already_exists: "Dữ liệu đã tồn tại"
+    update:
+      success: "Cập nhật câu hỏi thành công"
+      failure: "Cập nhật câu hỏi thất bại"
+      not_found: "Câu hỏi không tồn tại"
+      blank: "Thông tin câu hỏi không được để trống"
+      already_exists: "Dữ liệu đã tồn tại"
+    delete:
+      success: "Xóa câu hỏi thành công"
+      failure: "Xóa câu hỏi thất bại"
+      not_found: "Câu hỏi không tồn tại"
+    read:
+      success: "Lấy thông tin câu hỏi thành công"
+      failure: "Lấy thông tin câu hỏi thất bại"
+      not_found: "Câu hỏi không tồn tại"
   account:
     get:
       success: "Lấy thông tin tài khoản thành công"

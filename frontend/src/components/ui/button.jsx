@@ -18,7 +18,7 @@ export function Button({ children, className, style, onClick, disabled, variant 
     <button
       onClick={onClick}
       disabled={disabled}
-      className={cn(baseClass, className)}
+      className={cn(baseClass, sizeClass, 'cursor-pointer', className)}
       style={style}
       {...props}
     >

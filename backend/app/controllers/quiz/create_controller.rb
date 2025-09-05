@@ -1,31 +1,20 @@
 class Quiz::CreateController < ApplicationController
   def create
-    quiz = Quiz.new(
-      owner_user_id: params[:owner_user_id],
-      code: params[:code],
-      description: params[:description],
-      title: params[:title],
-      status: params[:status],
-      max_participants: params[:max_participants],
-      topic: params[:topic],
-      key: params[:key],
-      can_register: false
-    )
-
-    if quiz.save
-      render json: { message: 'Quiz created successfully', quiz_id: quiz.id }, status: :created
-    else
-      render json: { errors: quiz.errors.full_messages }, status: :unprocessable_entity
+    quiz = Quiz.create(params)
+    if quiz.nil?
+      render json: { error: "Quiz is exists" }, status: :unprocessable_entity
+      return
     end
+    render json: { quiz_id: quiz.id, quiz_slug: quiz.slug }, status: :ok
   end
 
   def delete
-    quiz = Quiz.find(params[:quiz_id])
+    quiz = Quiz.friendly.find(params[:quiz_id])
+    return unless is_true(quiz) and quiz
 
     # Ensure only the owner can delete the quiz
     # Các question thuộc quiz sẽ được xoá theo cascade
-    if quiz.owner_user_id.to_s == params[:user_id].to_s
-      quiz.destroy
+    if quiz.destroy
       render json: { message: 'Quiz deleted successfully' }, status: :ok
     else
       render json: { error: 'Unauthorized' }, status: :unauthorized
@@ -34,37 +23,41 @@ class Quiz::CreateController < ApplicationController
 
   def add_question
     # Lưu question vào table
-    question = Question.new(params[:question])
-    question.save
+    question = Question.new(params.permit(:quiz_id, :question_type, :content, :score, :level, :position, :time, :hide))
 
     # API này sẽ không quan tâm loại question
     # Mặc định ban đầu sẽ không có bất kì answer hay option nào
-
-    render json: { message: 'Question added successfully' }, status: :ok
+    # Việc cập nhật cho mỗi loại sẽ cho api khác phụ trách
+    return unless is_true(question.save)
+    render json: { question_id: question.id }, status: :ok
   end
 
   def remove_question
     # Các option và answer được xóa theo delete cascade
     # Chỉ cần xóa question khỏi table các question phụ thuộc sẽ được xóa
-    question = Question.find(params[:question_id])
-    question.destroy
-
-    render json: { message: 'Question removed successfully' }, status: :ok
+    # Đẩy tất cả cấu hỏi position lùi lại phần câu hỏi trước đó
+    if Question.remove_with_condition(params[:question_id])
+      render json: { message: 'Question removed successfully' }, status: :ok
+    else
+      render json: { error: 'Failed to remove question', details: question.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
-  def complete_quiz
-    quiz = Quiz.find(params[:quiz_id])
+  def hide_question
+    question = Question.find_by(id: params[:question_id])
+    return unless is_true(question) and question
 
-    # Ensure only the owner can complete the quiz
-    if quiz.owner_user_id.to_s == current_user.id.to_s
-      quiz.update(status: 'completed')
+    # Chỉ cần cập nhật trạng thái của câu hỏi
+    question.update(hide: true)
+    render json: { message: 'Question hidden successfully' }, status: :ok
+  end
 
-      # Remove the quiz from the active quizzes list
-      QuizListener.remove_quiz(quiz.id)
+  def show_question
+    question = Question.find_by(id: params[:question_id])
+    return unless is_true(question) and question
 
-      render json: { message: 'Quiz completed successfully' }, status: :ok
-    else
-      render json: { error: 'Unauthorized' }, status: :unauthorized
-    end
+    # Chỉ cần cập nhật trạng thái của câu hỏi
+    question.update(hide: false)
+    render json: { message: 'Question shown successfully' }, status: :ok
   end
 end

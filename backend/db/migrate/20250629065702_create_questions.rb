@@ -7,6 +7,7 @@ class CreateQuestions < ActiveRecord::Migration[7.1]
       t.integer :score, default: 1
       t.integer :level
       t.integer :position
+      t.boolean :hide, default: false
       t.integer :time, default: 30 # Default time in seconds
 
       t.timestamps

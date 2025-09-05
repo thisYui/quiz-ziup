@@ -1,26 +1,28 @@
 class Auth::AuthenticationController < ApplicationController
   def login
     if params[:email].present? && params[:password].present?
-      login_with_password(params)
-    elsif params[:jti].present?
-      login_with_jwt(params)
+      login_with_password
+    elsif params[:token].present?
+      login_with_jwt
     else
       render json: { error: I18n.t('auth.login.invalid_params') }, status: :bad_request
     end
   end
 
   def register
-      user = User.new(
-          email: params[:email],
-          password: params[:password],
-      )
+    user = User.new(
+      full_name: params[:full_name],
+      email: params[:email],
+      password: params[:password],
+      password_confirmation: params[:password_confirmation],
+    )
 
-      save_user(user)
+    return unless is_true(user.save)
+
+    render json: { message: I18n.t('account.update.success') }, status: :ok
   end
 
-
   def send_otp
-    # Gửi OTP đến email người dùng
     if OtpService.send_otp(params[:email])
       render json: { message: I18n.t('auth.otp.notice') }, status: :ok
     else
@@ -29,7 +31,6 @@ class Auth::AuthenticationController < ApplicationController
   end
 
   def confirm_otp
-    # xác nhận OTP
     if OtpService.confirm_otp(params[:email], params[:otp])
       render json: { message: I18n.t('auth.otp.success') }, status: :ok
     else
@@ -38,7 +39,8 @@ class Auth::AuthenticationController < ApplicationController
   end
 
   def renew_token
-    new_jti = JwtToken.renew_token(params)
+    ip_address = request.remote_ip
+    new_jti = JwtToken.renew_token(params, ip_address)
     if new_jti
       render json: { token: new_jti }, status: :ok
     else
@@ -47,8 +49,12 @@ class Auth::AuthenticationController < ApplicationController
   end
 
   def logout
-    # Xóa session
-    if JwtToken.delete_token(params)
+    if params.blank?
+      return render json: { error: I18n.t('auth.logout.success') }, status: :bad_request
+    end
+
+    ip_address = request.remote_ip
+    if JwtToken.delete_token(params, ip_address)
       render json: { message: I18n.t('auth.logout.success') }, status: :ok
     else
       render json: { error: I18n.t('auth.logout.failure') }, status: :unprocessable_entity
@@ -57,32 +63,31 @@ class Auth::AuthenticationController < ApplicationController
 
   private
 
-  def login_with_password(params)
-    user = find_user_by_email(params[:email])
-    return unless user
+  def login_with_password
+    user = User.find_by(email: params[:email])
+    return render json: { error: I18n.t('auth.login.failure') }, status: :unauthorized unless user
 
     if user.authenticate(params[:password])
-      # Tạo token hoặc session cho người dùng
+      ip_address = request.remote_ip
+
       if params[:remember_me]
-        jti = JwtToken.add_token(user.id, params[:jwt_token])
-        render json: { user_id: user_id, token: jti }, status: :ok
+        jti = JwtToken.add_token(user.id, params[:jwt_token], ip_address)
+        render json: { user_id: user.id, token: jti }, status: :ok
       else
-        render json: { user_id: user_id, token: nil }, status: :ok
+        render json: { user_id: user.id, token: nil }, status: :ok
       end
     else
-      render json: { error: I18n.t('auth.login.failure') }, status: :unauthorized
-      nil
+      render json: { fail: I18n.t('auth.login.failure') }, status: :unauthorized
     end
   end
 
-  def login_with_jwt(params)
-    # Giải mã JWT token và lấy id
-    user_id = JwtToken.find_by_jti(params)
-    unless user_id
-      render json: { error: I18n.t('auth.login.error_token') }, status: :unauthorized
-      return
+  def login_with_jwt
+    ip_address = request.remote_ip
+    user_id = JwtToken.find_by_jti(params[:token], ip_address)
+    if user_id
+      render json: { user_id: user_id, token: params[:token][:jti] }, status: :ok
+    else
+      render json: { fail: I18n.t('auth.login.error_token') }, status: :unauthorized
     end
-
-    render json: { user_id: user_id, token: params[:jti] }, status: :ok
   end
 end

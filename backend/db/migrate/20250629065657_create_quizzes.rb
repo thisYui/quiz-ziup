@@ -5,10 +5,11 @@ class CreateQuizzes < ActiveRecord::Migration[7.1]
       t.text :code
       t.text :title
       t.text :description
-      t.integer :status
+      t.boolean :is_private, default: false  # Indicates if the quiz is private
       t.integer :max_participants
       t.string :key, default: nil  # Key for private quizzes
       t.integer :topic
+      t.boolean :hide, default: false  # Indicates if the quiz is hidden from public view
 
       t.timestamps
     end

@@ -1,4 +1,4 @@
 class FillAnswer< ApplicationRecord
-  belongs_to :question, dependent: :destroy
-  has_many :answer, as: :answerable
+  belongs_to :question
+  belongs_to :answer
 end

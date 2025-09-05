@@ -1,57 +1,64 @@
 class Quiz::JoinController < ApplicationController
   def join
-    quiz = find_quiz(params[:code], params[:key])
-    return unless quiz
+    quiz = Quiz.find_quiz_by_code_and_key(params[:code], params[:key])
 
-    quiz_session = get_instance_session(quiz.id)
-    return unless quiz_session
+    code_error = nil
+    error =
+      if quiz.nil?
+        ['Quiz not found', :not_found]
+      elsif quiz == Quiz::KEY[:NOT]
+        ['Quiz is private, key is required', :forbidden]
+        code_error = 0
+      elsif quiz == Quiz::KEY[:INVALID]
+        ['Invalid key for the quiz', :forbidden]
+        code_error = 1
+      end
 
-    quiz_session.join(params[:participator_id], params[:participator_type])  # Join và ghi nhận tham gia
-    participants = quiz_session.get_list_participants
+    if error
+      render json: { error: error[0], code_error: code_error }, status: error[1]
+      return
+    end
+
+    quiz_session = QuizSession.get_instance_session(quiz.id)
+    return head(:bad_request) unless is_true(quiz_session)
+
+    participator = quiz_session.join(params[:user_id], params[:full_name])
+    return head(:bad_request) unless is_true(participator)
 
     render json: {
+      participator: participator,
+      quiz_id: quiz.id,
+      quiz_slug: quiz.slug,
       quiz_session: quiz_session,
-      participants: participants
+      quiz_title: quiz.title,
+      max_participants: quiz.max_participants,
+      participants: quiz_session.get_list_participants
     }, status: :ok
   end
 
+  def get
+    quiz = Quiz.friendly.find(params[:quiz_id])
+    return head(:not_found) unless is_true(quiz) and quiz
+
+    data_quiz = quiz.questions_with_content
+    render json: data_quiz, status: :ok
+  end
+
   def submit
-    # chưa viết
-  end
+    answer_params = params.require(:answer).permit(:quiz_session_id, :question_id, :participator_id, :option_id, :content)
+    answer = Answer.new(answer_params)
 
-  private
+    if answer.save
+      new_score = Participation.update_score(params[:participator_id], params[:score]) if params[:is_correct]
+      data = params[:data]
+      data[:score] = new_score if new_score
 
-  def find_quiz(code, key = nil)
-    quiz = Quiz.find_by(code: code)
+      StorageAnswer.add_answer_to_storage(params[:quiz_id], params[:data])
+      QuestionUtils.add_answer_to_question(params[:data], answer.id, params[:type])
 
-    unless quiz
-      render json: { error: I18n.t('quiz.join.not_found') }, status: :not_found
-      return nil
+      render json: { message: 'Answer added successfully' }, status: :ok
+    else
+      render json: { error: answer.errors.full_messages }, status: :unprocessable_entity
     end
-
-    if quiz.status == "key"
-      if key.nil?
-        render json: { key: true }, status: :ok
-        return nil
-      end
-
-      if quiz.key != key
-        render json: { error: I18n.t('quiz.join.invalid_key') }, status: :unprocessable_entity
-        return nil
-      end
-    end
-
-    quiz
-  end
-
-  def get_instance_session(quiz_id)
-    quiz_session = QuizSession.where(quiz_id: quiz_id).order(updated_at: :desc).first
-
-    if quiz_session.nil? || quiz_session.is_ended
-      render json: { error: I18n.t('quiz.join.not_started') }, status: :not_found
-      return nil
-    end
-
-    quiz_session
   end
 end
