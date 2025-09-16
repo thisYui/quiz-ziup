@@ -206,6 +206,10 @@ export const accountApi = {
         const response = await apiClient.post(`/account/${userId}/update_password`, { new_password: new_password });
         return response.data;
     },
+    verifyPassword: async (userId, old_password) => {
+        const response = await apiClient.post(`/account/${userId}/verify_password`, { old_password });
+        return response.data;
+    },
     updateAvatar: async (userId, data, type) => {
         const formData = new FormData();
 
