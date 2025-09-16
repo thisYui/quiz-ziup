@@ -1,2 +1,113 @@
 @import "tailwindcss";
-@plugin "tailwindcss-animate"
+@plugin "tailwindcss-animate";
+
+/* Burger menu trigger (uiverse-inspired), adapted to Radix aria-expanded */
+.burger {
+  --burger-line-width: 1.125em;
+  --burger-line-height: 0.125em;
+  --burger-offset: 0.625em;
+  --burger-bg: rgba(0, 0, 0, .15);
+  --burger-color: #fff;
+  --burger-line-border-radius: 0.1875em;
+  --burger-diameter: 2.25rem; /* match sm button height */
+  --burger-btn-border-radius: 0.375rem; /* rounded-md */
+  --burger-line-transition: .3s;
+  --burger-transition: all .1s ease-in-out;
+  --burger-hover-scale: 1.05;
+  --burger-active-scale: .98;
+
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  background: var(--burger-bg);
+  width: var(--burger-diameter);
+  height: var(--burger-diameter);
+  border-radius: var(--burger-btn-border-radius);
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: var(--burger-transition);
+  outline: 0;
+}
+
+.burger span {
+  height: var(--burger-line-height);
+  width: var(--burger-line-width);
+  background: var(--burger-color);
+  border-radius: var(--burger-line-border-radius);
+  position: absolute;
+  transition: var(--burger-line-transition);
+}
+.burger span:nth-child(1) { top: var(--burger-offset); }
+.burger span:nth-child(2) { bottom: var(--burger-offset); }
+.burger span:nth-child(3) { top: 50%; transform: translateY(-50%); }
+
+.burger:hover { transform: scale(var(--burger-hover-scale)); }
+.burger:active { transform: scale(var(--burger-active-scale)); }
+
+/* Open state driven by Radix */
+.burger[aria-expanded="true"] span:nth-child(1) {
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+.burger[aria-expanded="true"] span:nth-child(2) {
+  bottom: 50%;
+  transform: translateY(50%) rotate(-45deg);
+}
+.burger[aria-expanded="true"] span:nth-child(3) {
+  transform: translateX(calc(var(--burger-diameter) * -1 - var(--burger-line-width)));
+}
+
+/* Icon ring hover effect for Create button */
+.icon-ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+}
+.icon-ring::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  padding: 1px;
+  background:
+    conic-gradient(var(--ring-color, #9333ea), transparent 40%, var(--ring-color, #9333ea));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transform: rotate(0deg) scale(.9);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.group:hover .icon-ring::before {
+  opacity: .9;
+  transform: rotate(45deg) scale(1);
+  animation: spin-slow 1.2s linear infinite;
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(405deg) scale(1); }
+}
+
+/* Radial glow on hover for Create button */
+.icon-glow {
+  pointer-events: none;
+  position: absolute;
+  inset: -4px;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.75rem; /* ~rounded-md+ */
+  transform: scale(0.98);
+  filter: blur(10px);
+  opacity: 0;
+  background: radial-gradient(circle, rgba(168,85,247,0.85) 0%, transparent 60%);
+  transition: opacity .25s ease, transform .25s ease, filter .25s ease;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+.group:hover .icon-glow {
+  opacity: 0.6;
+  transform: scale(1.03);
+  filter: blur(14px);
+}

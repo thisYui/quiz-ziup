@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@rails/actioncable": "^7.1.0",
     "@tailwindcss/postcss": "^4.1.11",
     "axios": "^1.6.8",

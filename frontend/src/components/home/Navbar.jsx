@@ -1,6 +1,14 @@
 import React from 'react';
 import { Button } from '../ui/button.jsx';
 import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu.jsx';
+import { MoreVertical } from 'lucide-react';
+import plusIcon from '../../assets/ui/plus.svg';
 
 export const Navbar = ({ name }) => {
     const navigate = useNavigate();
@@ -47,37 +55,33 @@ export const Navbar = ({ name }) => {
                             variant="default"
                             size="sm"
                             style={{ backgroundColor: '#9333EA' }}
-                            onClick={handleHistory}
-                    >
-                        History
-                    </Button>
-
-                    <Button
-                            variant="default"
-                            size="sm"
-                            style={{ backgroundColor: '#9333EA' }}
                             onClick={handleCreate}
+                            className="group relative overflow-visible"
                     >
-                        Create
+                        <span className="icon-glow" aria-hidden="true"></span>
+                        <span className="flex items-center gap-2">
+                            <span className="icon-ring" style={{ ['--ring-color']: '#a855f7' }}>
+                                <img src={plusIcon} alt="plus" className="h-4 w-4" />
+                            </span>
+                            Create
+                        </span>
                     </Button>
 
-                    <Button
-                            variant="default"
-                            size="sm"
-                            style={{ backgroundColor: '#9333EA' }}
-                            onClick={handleMyQuiz}
-                    >
-                        My Quiz
-                    </Button>
-
-                    <Button
-                            variant="default"
-                            size="sm"
-                            style={{ backgroundColor: '#2563EB' }}
-                            onClick={handleSetting}
-                    >
-                        Setting
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button
+                                    className="burger rounded-md"
+                                    aria-label="Open menu"
+                            >
+                                <span></span><span></span><span></span>
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuItem onClick={handleHistory}>History</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleMyQuiz}>My Quiz</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleSetting}>Settings</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
         </div>
