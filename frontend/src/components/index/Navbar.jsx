@@ -15,24 +15,35 @@ export const Navbar = () => {
 
   return (
       <div className="w-full bg-[#1F1F1F] border-b border-gray-700 shadow-sm z-20 fixed top-0 left-0">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-end gap-4">
-          <Button
-              variant="default"
-              size="sm"
-              style={{ backgroundColor: '#2563EB' }}
-              onClick={handleLogin}
+        <div className="w-full px-2 md:px-2 h-16 md:h-20 flex items-center">
+          <button
+              onClick={() => navigate('/')}
+              aria-label="Home"
+              className="flex items-center gap-2 md:gap-3 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 rounded"
           >
-            Login
-          </Button>
+            <img src="/src/assets/favicon/favicon.png" alt="quiz-ziup logo" className="w-6 h-6 md:w-7 md:h-7" />
+            <span className="text-white font-semibold text-lg md:text-xl">quiz-ziup</span>
+          </button>
 
-          <Button
-              variant="default"
-              size="sm"
-              style={{ backgroundColor: '#9333EA' }}
-              onClick={handleSignup}
-          >
-            Sign Up
-          </Button>
+          <div className="flex items-center gap-2 md:gap-3 ml-auto">
+            <Button
+                variant="default"
+                size="sm"
+                style={{ backgroundColor: '#2563EB' }}
+                onClick={handleLogin}
+            >
+              Login
+            </Button>
+
+            <Button
+                variant="default"
+                size="sm"
+                style={{ backgroundColor: '#9333EA' }}
+                onClick={handleSignup}
+            >
+              Sign Up
+            </Button>
+          </div>
         </div>
       </div>
   );

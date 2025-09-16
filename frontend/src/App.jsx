@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import IndexPage from "./pages/IndexPage.jsx";
+import TestUiPage from "./pages/TestUiPage.jsx";
 import AuthRoutes from './routes/AuthRoutes.jsx';
 import QuizRoutes from "./routes/QuizRoutes.jsx";
 import AccountRoutes from "./routes/AccountRoutes.jsx";
@@ -39,6 +40,7 @@ function App() {
         <Router>
             <Routes>
                 <Route path="/" element={<IndexPage />} />
+                <Route path="/test-ui" element={<TestUiPage />} />
                 <Route path="/auth/*" element={<AuthRoutes />} />
                 <Route path="/account/*" element={<AccountRoutes />} />
                 <Route path="/quiz/*" element={<QuizRoutes />} />

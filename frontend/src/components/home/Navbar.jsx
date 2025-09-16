@@ -24,22 +24,25 @@ export const Navbar = ({ name }) => {
     }
 
     return (
-        <div className="w-full h-20 bg-[#1F1F1F] border-b border-gray-700 shadow-sm z-20 fixed top-0 left-0">
-            <div className="max-w-7xl h-20 mx-auto p-4 flex items-center justify-between gap-4">
-                {/* trái: logo + tên */}
-                <div className="flex items-center gap-3">
-                    <img
-                            src="/src/assets/favicon/favicon.png"
-                            alt="Logo"
-                            className="w-6 h-6"
-                    />
-                    <h1 className="text-lg font-bold text-white">
-                        {name || 'Quiz App'}
-                    </h1>
-                </div>
+        <div className="w-full bg-[#1F1F1F] border-b border-gray-700 shadow-sm z-20 fixed top-0 left-0">
+            <div className="w-full px-2 md:px-2 h-16 md:h-20 flex items-center">
+                <button
+                        onClick={() => {
+                            const userId = sessionStorage.getItem('user_id');
+                            if (userId) {
+                                navigate(`/account/${userId}/home`);
+                            } else {
+                                navigate('/');
+                            }
+                        }}
+                        aria-label="Home"
+                        className="flex items-center gap-2 md:gap-3 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 rounded"
+                >
+                    <img src="/src/assets/favicon/favicon.png" alt="quiz-ziup logo" className="w-6 h-6 md:w-7 md:h-7" />
+                    <span className="text-white font-semibold text-lg md:text-xl">{name || 'quiz-ziup'}</span>
+                </button>
 
-                {/* phải: các nút */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3 ml-auto">
                     <Button
                             variant="default"
                             size="sm"

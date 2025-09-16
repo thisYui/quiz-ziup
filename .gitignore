@@ -104,3 +104,7 @@ guidelines.md
 /server/package-lock.json
 
 node_modules/
+
+
+#Cursor
+.cursor/
