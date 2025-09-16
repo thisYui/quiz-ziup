@@ -19,7 +19,7 @@ export const Navbar = () => {
           <button
               onClick={() => navigate('/')}
               aria-label="Home"
-              className="flex items-center gap-2 md:gap-3 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 rounded"
+              className="flex items-center gap-2 md:gap-3 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 rounded cursor-pointer select-none"
           >
             <img src="/src/assets/favicon/favicon.png" alt="quiz-ziup logo" className="w-6 h-6 md:w-7 md:h-7" />
             <span className="text-white font-semibold text-lg md:text-xl">quiz-ziup</span>

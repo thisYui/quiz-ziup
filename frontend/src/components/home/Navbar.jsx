@@ -32,7 +32,7 @@ export const Navbar = ({ name }) => {
     }
 
     return (
-        <div className="w-full bg-[#1F1F1F] border-b border-gray-700 shadow-sm z-20 fixed top-0 left-0">
+        <div className="w-full bg-[#1F1F1F] border-b border-gray-700 shadow-sm z-50 fixed top-0 left-0">
             <div className="w-full px-2 md:px-2 h-16 md:h-20 flex items-center">
                 <button
                         onClick={() => {
@@ -44,7 +44,7 @@ export const Navbar = ({ name }) => {
                             }
                         }}
                         aria-label="Home"
-                        className="flex items-center gap-2 md:gap-3 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 rounded"
+                        className="flex items-center gap-2 md:gap-3 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 rounded cursor-pointer select-none"
                 >
                     <img src="/src/assets/favicon/favicon.png" alt="quiz-ziup logo" className="w-6 h-6 md:w-7 md:h-7" />
                     <span className="text-white font-semibold text-lg md:text-xl">{name || 'quiz-ziup'}</span>
