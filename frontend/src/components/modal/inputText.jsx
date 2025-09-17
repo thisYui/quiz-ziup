@@ -2,15 +2,16 @@ import React, { useState } from "react";
 import { SETTING, SETTING_REVERSE } from "../../constants/index.js";
 import { accountApi } from "../../services/apiService.js";
 
-function FancyInput({ label, name, type = "text", defaultValue = "", readOnly = false, disabled = false, onChange }) {
+export function FancyInput({ label, name, type = "text", value, defaultValue = "", readOnly = false, disabled = false, onChange, placeholder }) {
     return (
         <div className="w-full">
             <input
                 className="input w-full"
-                placeholder={label}
+                placeholder={placeholder || label}
                 type={type}
                 name={name}
-                defaultValue={defaultValue}
+                value={value !== undefined ? value : undefined}
+                defaultValue={value === undefined ? defaultValue : undefined}
                 readOnly={readOnly}
                 disabled={disabled}
                 required
@@ -19,6 +20,9 @@ function FancyInput({ label, name, type = "text", defaultValue = "", readOnly = 
             <style>{`
 /* From Uiverse.io by Jaareet (theme-adapted) */
 .input { font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue",sans-serif; font-weight: 500; font-size: .8vw; color: #fff; background-color: rgb(28,28,30); box-shadow: 0 0 .4vw rgba(0,0,0,0.5), 0 0 0 .15vw transparent; border-radius: 0.4vw; border: none; outline: none; padding: 0.6vw 0.8vw; max-width: 100%; transition: .4s; }
+.input[type=number] { color-scheme: dark; box-shadow: inset -2.2rem 0 0 rgba(255,255,255,0.04), 0 0 .4vw rgba(0,0,0,0.5), 0 0 0 .15vw transparent; }
+.input[type=number]::-webkit-outer-spin-button,
+.input[type=number]::-webkit-inner-spin-button { opacity: 0.9; }
 .input:hover { box-shadow: 0 0 0 .15vw rgba(135, 207, 235, 0.186); }
 .input:focus { box-shadow: 0 0 0 .15vw skyblue; }
 @media (max-width: 768px) { .input { font-size: 14px; padding: 10px 12px; border-radius: 8px; } }
